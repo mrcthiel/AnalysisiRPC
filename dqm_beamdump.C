@@ -39,6 +39,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	c1->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__bc_0.pdf",hv,sn,mt);
 	c1->SaveAs(s);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__bc_0_forwebDCS.png",hv,sn,mt);
+	c1->SaveAs(s);
 	//Draw trigger time
 	TCanvas *c2 = new TCanvas("c2","The Ntuple canvas",200,10,780,780);
 	TPad *pad2 = new TPad("pad2","This is pad2",0.02,0.02,0.98,0.98,21);
@@ -65,6 +67,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	c2->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__triggerTime.pdf",hv,sn,mt);
 	c2->SaveAs(s);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__triggerTime_forwebDCS.png",hv,sn,mt);
+	c2->SaveAs(s);
 	//time vs strip	
 	TCanvas *c3 = new TCanvas("c3","The Ntuple canvas",200,10,900,780);
 	TPad *pad3 = new TPad("pad3","This is pad3",0.02,0.02,0.98,0.98,21);
@@ -89,6 +93,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeDirectvsStrip.root",hv,sn,mt);
 	c3->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timevsDirectStrip.pdf",hv,sn,mt);
+	c3->SaveAs(s);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timevsDirectStrip_forwebDCS.png",hv,sn,mt);
 	c3->SaveAs(s);
 	// strip vs bc0
 	TCanvas *c4 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
@@ -116,6 +122,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	c4->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_bc0timevsStrips.pdf",hv,sn,mt);
 	c4->SaveAs(s);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_bc0timevsStrips_forwebDCS.png",hv,sn,mt);
+	c4->SaveAs(s);
 	//strip vs time ps
 	TCanvas *c5 = new TCanvas("c5","The Ntuple canvas",200,10,900,780);
 	TPad *pad5 = new TPad("pad5","This is pad5",0.02,0.02,0.98,0.98,21);
@@ -141,6 +149,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips.root",hv,sn,mt);
 	c5->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips.pdf",hv,sn,mt);
+	c5->SaveAs(s);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips_forwebDCS.png",hv,sn,mt);
 	c5->SaveAs(s);
 
 	//stip hits
@@ -168,6 +178,8 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	c6->SaveAs(s);
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__StripsAllhits.pdf",hv,sn,mt);
 	c6->SaveAs(s);
-
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__StripsAllhits_forwebDCS.png",hv,sn,mt);
+	c6->SaveAs(s);
+	gApplication->Terminate();
 	
 }

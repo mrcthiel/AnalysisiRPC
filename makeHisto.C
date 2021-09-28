@@ -7,7 +7,7 @@
 
 void makeHisto(Int_t rn) {
 	TString s("");
-	s.Form("/data/root_trees/Run_%d.root",rn);
+	s.Form("/data/beamdump/root_trees/_HV_-999_SN_-999_MaxTrig_-999_Run_%d.root",rn);
 	std::cout<<s<<std::endl;
 	TFile *f1 = TFile::Open(s);
 	TTree *evt = (TTree*)f1->Get("evt");
@@ -36,9 +36,9 @@ void makeHisto(Int_t rn) {
 	hist1->Draw("Histo");
 	c1->cd();
 	c1->Update();
-	s.Form("plots/run_%d_bc_0.root",rn);
+	s.Form("plots_gif/run_%d_bc_0.root",rn);
 	c1->SaveAs(s);
-	s.Form("plots/run_%d_bc_0.pdf",rn);
+	s.Form("plots_gif/run_%d_bc_0.pdf",rn);
 	c1->SaveAs(s);
 	//Draw trigger time
 	TCanvas *c2 = new TCanvas("c2","The Ntuple canvas",200,10,780,780);
@@ -62,9 +62,9 @@ void makeHisto(Int_t rn) {
 	hist2->Draw("Histo");
 	c2->cd();
 	c2->Update();
-	s.Form("plots/run_%d_triggerTime.root",rn);
+	s.Form("plots_gif/run_%d_triggerTime.root",rn);
 	c2->SaveAs(s);
-	s.Form("plots/run_%d_triggerTime.pdf",rn);
+	s.Form("plots_gif/run_%d_triggerTime.pdf",rn);
 	c2->SaveAs(s);
 	//time vs strip	
 	TCanvas *c3 = new TCanvas("c3","The Ntuple canvas",200,10,900,780);
@@ -87,9 +87,9 @@ void makeHisto(Int_t rn) {
 	hist3->Draw("COLZ");
 	c3->cd();
 	c3->Update();
-	s.Form("plots/run_%d_2D_timeDirectvsStrip.root",rn);
+	s.Form("plots_gif/run_%d_2D_timeDirectvsStrip.root",rn);
 	c3->SaveAs(s);
-	s.Form("plots/run_%d_2D_timevsDirectStrip.pdf",rn);
+	s.Form("plots_gif/run_%d_2D_timevsDirectStrip.pdf",rn);
 	c3->SaveAs(s);
 	// strip vs bc0
 	TCanvas *c4 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
@@ -113,9 +113,9 @@ void makeHisto(Int_t rn) {
 	hist4->Draw("COLZ");
 	c4->cd();
    	c4->Update();
-	s.Form("plots/run_%d_2D_bc0timevsStrips.root",rn);
+	s.Form("plots_gif/run_%d_2D_bc0timevsStrips.root",rn);
 	c4->SaveAs(s);
-	s.Form("plots/run_%d_2D_bc0timevsStrips.pdf",rn);
+	s.Form("plots_gif/run_%d_2D_bc0timevsStrips.pdf",rn);
 	c4->SaveAs(s);
 	//strip vs time ps
 	TCanvas *c5 = new TCanvas("c5","The Ntuple canvas",200,10,900,780);
@@ -139,9 +139,9 @@ void makeHisto(Int_t rn) {
 	hist5->Draw("COLZ");
 	c5->cd();
    	c5->Update();
-	s.Form("plots/run_%d_2D_timeReturnvsStrips.root",rn);
+	s.Form("plots_gif/run_%d_2D_timeReturnvsStrips.root",rn);
 	c5->SaveAs(s);
-	s.Form("plots/run_%d_2D_timeReturnvsStrips.pdf",rn);
+	s.Form("plots_gif/run_%d_2D_timeReturnvsStrips.pdf",rn);
 	c5->SaveAs(s);
 	TCanvas *c9 = new TCanvas("c9","The Ntuple canvas",200,10,900,780);
 	TPad *pad9 = new TPad("pad9","This is pad5",0.02,0.02,0.98,0.98,21);
@@ -157,9 +157,9 @@ void makeHisto(Int_t rn) {
 	//projY->Draw("HistoSame");
 	c9->cd();
 	c9->Update();
-	s.Form("plots/run_%d_projY.root",rn);
+	s.Form("plots_gif/run_%d_projY.root",rn);
         c9->SaveAs(s);
-	s.Form("plots/run_%d_projY.pdf",rn);
+	s.Form("plots_gif/run_%d_projY.pdf",rn);
         c9->SaveAs(s);
 
 	//stip hits
@@ -183,9 +183,9 @@ void makeHisto(Int_t rn) {
 	hist6->Draw("Histo");
 	c6->cd();
 	c6->Update();
-	s.Form("plots/run_%d_StripsAllhits.root",rn);
+	s.Form("plots_gif/run_%d_StripsAllhits.root",rn);
 	c6->SaveAs(s);
-	s.Form("plots/run_%d_StripsAllhits.pdf",rn);
+	s.Form("plots_gif/run_%d_StripsAllhits.pdf",rn);
 	c6->SaveAs(s);
 	TCanvas *c2_ = new TCanvas("c2_","The Ntuple canvas",200,10,780,780);
         TPad *pad2_ = new TPad("pad2_","This is pad2",0.02,0.02,0.98,0.98,21);
@@ -207,9 +207,9 @@ void makeHisto(Int_t rn) {
         hist2_->Draw("Histo");
         c2_->cd();
         c2_->Update();
-        s.Form("plots/run_%d_stripsignalTime.root",rn);
+        s.Form("plots_gif/run_%d_stripsignalTime.root",rn);
         c2_->SaveAs(s);
-        s.Form("plots/run_%d_stripsignalTime.pdf",rn);
+        s.Form("plots_gif/run_%d_stripsignalTime.pdf",rn);
         c2_->SaveAs(s);
 
 	
