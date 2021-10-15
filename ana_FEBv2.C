@@ -265,7 +265,11 @@ void ana_FEBv2::Loop()
                {
                    // LR not in muon window
                    allStrips[i].LRframeOK[flr] = false;
-               }
+ 		   if ( !((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-4000 ))
+                { 
+		   allStrips[i].LRframeBkg[flr] = true;
+	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
+              }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;
            } // LR Frame loop ends
            allStrips[i].buildDeltas();
