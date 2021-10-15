@@ -21,6 +21,8 @@ public :
    Int_t	   hv_;
    Int_t	   sn_;
    Int_t	   mt_;
+   Int_t	   muW1_;
+   Int_t	   muW2_;
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
@@ -38,7 +40,7 @@ public :
    TBranch        *b_nframe;   //!
    TBranch        *b_frame;   //!
 
-   ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, TTree *tree=0);
+   ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2 , TTree *tree=0);
    virtual ~ana_FEBv2();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -52,17 +54,20 @@ public :
 #endif
 
 #ifdef ana_FEBv2_cxx
-ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, TTree *tree) : fChain(0) 
+ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2, TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    hv_ = hv;
    sn_ = sn;
    mt_ = mt;
+   muW1_ = muW1;
+   muW2_ = muW2;
    TString 	   s("");
    //s.Form("/data/root_trees/Run_%d.root",rn);
    //s.Form("/data/beamdump/root_trees/_HV_7_SN_999_MaxTrig_1000_Run_%d.root",rn);
    s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+   //s.Form("/data/904/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
    if (tree == 0) {
 	   TChain *chain = new TChain("evt"); 
 	   chain->Add(s);
