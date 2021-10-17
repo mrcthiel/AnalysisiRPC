@@ -128,7 +128,7 @@ void ana_FEBv2::Loop()
    TH1F* hHR = new TH1F("hHR", "HR", 50, 0.0, 50);
    //Adding new histograms
    TH1F* hLRn = new TH1F("hLRn", "hLRn", 50, 0.0, 50);
-   TH1F* hHRn = new TH1F("hHRn", "hHRn". 50, 0.0, 50);
+   TH1F* hHRn = new TH1F("hHRn", "hHRn", 50, 0.0, 50);
    //
    TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,600, -30, 30);
    TH1F* hdeltaT_1D = new TH1F("deltaT", "T (HR - LR)", 600, -30, 30);
