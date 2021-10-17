@@ -126,6 +126,10 @@ void ana_FEBv2::Loop()
 
    TH1F* hLR = new TH1F("hLR", "LR", 50, 0.0, 50);
    TH1F* hHR = new TH1F("hHR", "HR", 50, 0.0, 50);
+   //Adding new histograms
+   TH1F* hLRn = new TH1F("hLRn", "hLRn", 50, 0.0, 50);
+   TH1F* hHRn = new TH1F("hHRn", "hHRn". 50, 0.0, 50);
+   //
    TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,600, -30, 30);
    TH1F* hdeltaT_1D = new TH1F("deltaT", "T (HR - LR)", 600, -30, 30);
    TH2F* hsumT = new TH2F("sumT", "T (HR + LR)", 50,0,50,200, 0, 200);
@@ -252,6 +256,7 @@ void ana_FEBv2::Loop()
 		   if ( !((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].HRframeBkg[fhr] = true;
+                   hLRn->Fill(m_strip(i),1/(run_duration_in_sec*150)); //For Noise
 	       }
                }
                if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
@@ -268,6 +273,7 @@ void ana_FEBv2::Loop()
  		   if ( !((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].LRframeBkg[flr] = true;
+                   hHRn->Fill(m_strip(i),1/(run_duration_in_sec*150)); //For Noise
 	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
               }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;
