@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 void eff_curve(Int_t sn ){
 
+=======
+void eff_curve(int sn, string wp){
+
+  cout << "SN=" << sn << " : Working Point=" << wp << endl;
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
 
   TGraphErrors* efficiency = new TGraphErrors();
 
   // open a file in read mode.
+<<<<<<< HEAD
 
   string fileInName("");
   //fileInName = fileInName + "" + fileIn + ".txt";
@@ -12,15 +19,25 @@ void eff_curve(Int_t sn ){
   //fileInName = Form("eff_input_medium_SN%d", sn);
   fileInName = Form("eff_input_loose_SN156.txt");
 
+=======
+  string fileInName("");
+  fileInName = Form("eff_input_SN%d_%s.txt", sn, wp.c_str());
+  
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
   cout << fileInName.c_str() << endl;
   string sHV, sEff, sEff_Err, line, sTitle;
   float HV, Eff, Eff_Err, HVmin, HVmax;
 
+<<<<<<< HEAD
 
   int i = -2;
   ifstream readFile(fileInName.c_str());
 
 
+=======
+  int i = -2;
+  ifstream readFile(fileInName.c_str());
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
   
   while(getline(readFile,line))   {
     if (i == -2){
@@ -51,6 +68,7 @@ void eff_curve(Int_t sn ){
   readFile.close();
   
 
+<<<<<<< HEAD
  //TF1* sigmoid = new TF1("sigmoid","[0]/(1+exp([1]*([2]-x)))",HVmin-100,HVmax+100);
  TF1* sigmoid = new TF1("sigmoid","[0]/(1+exp([1]*([2]-x)))",6000,7200);
  sigmoid->SetParName(0,"#epsilon_{max}");
@@ -59,10 +77,21 @@ void eff_curve(Int_t sn ){
  sigmoid->SetParameter(0,0.98);
  sigmoid->SetParameter(1,0.01);
  sigmoid->SetParameter(2,7000);
+=======
+  //TF1* sigmoid = new TF1("sigmoid","[0]/(1+exp([1]*([2]-x)))",HVmin-100,HVmax+100);
+  TF1* sigmoid = new TF1("sigmoid","[0]/(1+exp([1]*([2]-x)))",6000,7200);
+  sigmoid->SetParName(0,"#epsilon_{max}");
+  sigmoid->SetParName(1,"#lambda");
+  sigmoid->SetParName(2,"HV_{50%}");
+  sigmoid->SetParameter(0,0.98);
+  sigmoid->SetParameter(1,0.01);
+  sigmoid->SetParameter(2,7000);
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
 
             //****************************************************
 
 
+<<<<<<< HEAD
 efficiency->Fit(sigmoid);
 
 efficiency->SetMarkerStyle(22);
@@ -86,6 +115,31 @@ efficiency->Draw("P");
  
 
  TLegend *leg = new TLegend(0.608739,0.1024784,0.8085924,0.2523343,NULL,"brNDC");
+=======
+  efficiency->Fit(sigmoid);
+  
+  efficiency->SetMarkerStyle(22);
+  efficiency->SetMarkerSize(2);
+
+  sTitle = sTitle + "; HVeff; Eff";
+  TH1D* Plotter = new TH1D("Plotter", sTitle.c_str(), 1, HVmin-100,HVmax+100);
+ 
+  Plotter->SetStats(0);
+ 
+  Plotter->SetMinimum(0.);
+  Plotter->SetMaximum(1.08);
+ 
+  Plotter->Draw();
+ 
+ efficiency->Draw("P");
+ 
+ 
+  //gPad->SetLogy(1);
+ 
+  
+ 
+  TLegend *leg = new TLegend(0.608739,0.1024784,0.8085924,0.2523343,NULL,"brNDC");
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
   leg->SetBorderSize(0);
   leg->SetTextFont(62);
   leg->SetTextSize(0.04);
@@ -149,9 +203,15 @@ efficiency->Draw("P");
   cout << "knee = " << knee << endl;
 
   string outfile = "Efficiency";
+<<<<<<< HEAD
   string outfile_png = Form("Efficiency_loose_50dac_Beamdump.png");	    //,sn);
   string outfile_pdf = Form("Efficiency_loose_50dac_Beamdump.pdf");	    //,sn);
   string outfile_root =Form("Efficiency_loose_50dac_Beamdump.root");	    //,sn);
+=======
+  string outfile_png = Form("Efficiency_SN%d_%s_50dac_Beamdump.png", sn, wp.c_str());
+  string outfile_pdf = Form("Efficiency_SN%d_%s_50dac_Beamdump.pdf", sn, wp.c_str());
+  string outfile_root =Form("Efficiency_SN%d_%s_50dac_Beamdump.root", sn ,wp.c_str());
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
 
   gPad->SaveAs(outfile_png.c_str());
   gPad->SaveAs(outfile_pdf.c_str());
@@ -162,6 +222,9 @@ efficiency->Draw("P");
   effout->Close();  
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8a43c962a8c851bebb2daaee3389b339628e0e0f
 }
 
