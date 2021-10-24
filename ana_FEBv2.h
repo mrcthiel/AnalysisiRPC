@@ -66,7 +66,11 @@ ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2, TTre
    TString 	   s("");
    //s.Form("/data/root_trees/Run_%d.root",rn);
    //s.Form("/data/beamdump/root_trees/_HV_7_SN_999_MaxTrig_1000_Run_%d.root",rn);
-   s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+   //s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+   std::cout<<"Formatting the string"<<std::endl;
+   s.Form("/home/elton/PhD/AnalysisiRPC/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+   //s.Form("/home/elton/PhD/AnalysisiRPC/_HV_7_SN_164_MaxTrig_5000_Run_1144.root");
+   std::cout<<"Formatting done!!"<<std::endl;
    //s.Form("/data/904/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
    if (tree == 0) {
 	   TChain *chain = new TChain("evt"); 

@@ -126,6 +126,10 @@ void ana_FEBv2::Loop()
 
    TH1F* hLR = new TH1F("hLR", "LR", 50, 0.0, 50);
    TH1F* hHR = new TH1F("hHR", "HR", 50, 0.0, 50);
+   //Adding new histograms
+   TH1F* hLRn = new TH1F("hLRn", "hLRn", 50, 0.0, 50);
+   TH1F* hHRn = new TH1F("hHRn", "hHRn", 50, 0.0, 50);
+   //
    TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,600, -30, 30);
    TH1F* hdeltaT_1D = new TH1F("deltaT", "T (HR - LR)", 600, -30, 30);
    TH2F* hsumT = new TH2F("sumT", "T (HR + LR)", 50,0,50,200, 0, 200);
@@ -252,6 +256,7 @@ void ana_FEBv2::Loop()
 		   if ( !((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].HRframeBkg[fhr] = true;
+                   hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For Noise; newly added histogram
 	       }
                }
                if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
@@ -268,6 +273,7 @@ void ana_FEBv2::Loop()
  		   if ( !((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].LRframeBkg[flr] = true;
+                   hHRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For Noise; newly added histogram
 	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
               }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;
@@ -347,7 +353,34 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.root",hv_,sn_,mt_)
 c1->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.pdf",hv_,sn_,mt_);
 c1->SaveAs(s);
-    
+
+//The newly added noise histograms go here
+gStyle->SetOptStat(0);
+TCanvas *can1 = new TCanvas("can1","The Ntuple canvas",200,10,780,780);
+TPad *newpad1 = new TPad("newpad1","This is newpad1",0.05,0.05,0.98,0.55,21);
+TPad *newpad2 = new TPad("newpad2","This is newpad2",0.05,0.55,0.98,0.98,21);
+newpad1->UseCurrentStyle(); newpad2->UseCurrentStyle();
+newpad1->Draw(); newpad2->Draw();
+newpad1->cd();
+newpad1->SetGrid();
+newpad1->SetLogy();
+hLRn->Draw("Hist");
+hLRn->GetYaxis()->SetTitle("Noise Hz/cm");
+hLRn->GetXaxis()->SetTitle("Strips");
+newpad2->cd();
+newpad2->SetGrid();
+newpad2->SetLogy();
+hHRn->Draw("Hist");
+hHRn->GetYaxis()->SetTitle("Noise Hz/cm");
+hHRn->GetXaxis()->SetTitle("Strips");
+can1->cd();
+can1->Update();
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__new_noise_histo.root",hv_,sn_,mt_);
+can1->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__new_noise_histo.pdf",hv_,sn_,mt_);
+can1->SaveAs(s);
+
+
 TCanvas *c2 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
 TPad *pad4 = new TPad("pad4","This is pad4",0.02,0.02,0.98,0.98,21);
 pad4->UseCurrentStyle();
@@ -465,6 +498,7 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.root",hv_,sn_,mt_);
 c11->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.pdf",hv_,sn_,mt_);
 c11->SaveAs(s);
+
 /*
 TCanvas *c_a3n = new TCanvas("c_a3n","The Ntuple canvas",200,10,780,780);
 TPad *pad_a3n = new TPad("pad_a3n","This is pad10",0.05,0.05,0.98,0.55,21);
