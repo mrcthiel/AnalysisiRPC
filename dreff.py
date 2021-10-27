@@ -4,14 +4,14 @@ targetDir = './outputs/'
 sn = sys.argv[1]
 wp = sys.argv[2]
 
-#HV=['6800','7000','7100','7200','7400']
+#HV=["6000","6500","6900","7000","7100","7200","7500"] #or you can use the list directly
 HV=[]
 eff=[]
 
 # check output directory
 if not os.path.exists(targetDir):
-    print("There is no outputs")
-    os.exit()
+    print("There is no output directory")
+    sys.exit()
 
 # look for files with run number(sn)
 for files in sorted(os.listdir(targetDir)):
@@ -34,10 +34,11 @@ for files in sorted(os.listdir(targetDir)):
             #    err = line.strip().split(": ",1)[1]
 
 # get list of HV as an input
+# or you can use the list directly
 while True:
     if len(HV) != len(eff):
         del HV[:]
-        HVlist = raw_input("The number of HV elements is supposed to be "+str(len(eff))+". Please enter "+str(len(eff))+" elements of the list separated by space:\n>>")
+        HVlist = input("The number of HV elements is supposed to be "+str(len(eff))+". Please enter "+str(len(eff))+" elements of the list separated by space:\n>>")
         HV = HVlist.split()
         #print HV
     else: break
