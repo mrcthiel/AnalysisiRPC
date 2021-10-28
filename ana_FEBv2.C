@@ -68,13 +68,6 @@ void ana_FEBv2::Loop()
      {0.00, -0.47, 1.11, 5.64, 0.57, 3.80, 0.13, 2.86, 2.23, 0.82, 2.61, 4.06, 9.23, 2.59, 4.10, 7.06, 3.32, 8.13, 8.62, 2.60, 7.67, 3.87, 4.64, 3.05, 4.64, 2.58, 8.72, 7.11, -0.15, 1.62, 3.45, 0.49},
     {0.00, -0.53, 1.22, 5.74, 0.67, 4.06, 0.19, 2.88, 2.30, 1.08, 2.63, 4.15, 9.32, 2.78, 4.32, 7.33, 3.81, 8.44, 8.03, 3.14, 7.87, 4.32, 5.20, 3.42, 4.99, 3.03, 9.22, 7.59, 0.19, 2.05, 3.76, 0.91}
     };
-     //  double time_corr_fine[3][32] = {
-     // {12.5594,12.5594,13.5594,18.5594,13.558,16.5594,12.5594,15.5594,14.5594,13.5594,15.5591,16.5594,21.6012,15.5594,16.5594,19.5594,16.5594,20.5594,20.5594,15.5594,20.5594,16.5594,17.5594,15.5594,17.5594,15.5594,21.5594,19.5594,12.5594,14.5594,15.8649,12.7833},
-     // {12.5594,12.0289,13.5594,18.5594,13.5594,16.5594,12.5594,15.5594,14.5594,13.5594,14.5594,16.5594,21.5594,15.0291,16.5594,19.5594,16.0271,20.5594,20.5594,15.5594,20.5594,16.5594,17.5594,15.5594,17.5594,15.5594,21.5594,19.5594,12.5594,14.5594,15.5594,12.5594},
-     // {12.5594,12.5594,13.5594,18.5594,13.5492,16.5594,12.5594,15.5594,14.5594,13.5594,15.5594,16.5594,22.0883,15.5594,16.5594,19.5594,16.5594,21.0771,20.5594,15.5594,20.5594,16.5594,17.5594,15.5594,17.5594,15.5594,21.5594,19.5669,12.5594,14.5594,15.5594,12.563}
-    //};
-
-
 
     uint64_t nentries;
    nentries = fChain->GetEntriesFast();
@@ -238,6 +231,7 @@ void ana_FEBv2::Loop()
        
        if (ntrig_event!=3 and ntrig_event!=0) std::cout<< "nTRIG in this event : "<< ntrig_event  <<std::endl;
        if (!(trig_exists && ntrig_event ==3) ) continue;
+       //if (!(trig_exists) ) continue;
        if (bad_trig) continue;
        
        for (uint32_t i=0;i<48;i++) {
@@ -256,7 +250,7 @@ void ana_FEBv2::Loop()
 		   if ( !((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].HRframeBkg[fhr] = true;
-                   hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For Noise; newly added histogram
+                   hLRn->Fill(m_strip(frame[i]),1/(0.01*run_duration_in_sec*150)); //For Noise; newly added histogram
 	       }
                }
                if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
@@ -273,7 +267,7 @@ void ana_FEBv2::Loop()
  		   if ( !((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-4000 ))
                 { 
 		   allStrips[i].LRframeBkg[flr] = true;
-                   hHRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For Noise; newly added histogram
+                   hHRn->Fill(m_strip(frame[i]),1/(0.01*run_duration_in_sec*150)); //For Noise; newly added histogram
 	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
               }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;

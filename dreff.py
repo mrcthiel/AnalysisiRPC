@@ -4,8 +4,8 @@ targetDir = './outputs/'
 sn = sys.argv[1]
 wp = sys.argv[2]
 
-#HV=["6000","6500","6900","7000","7100","7200","7500"] #or you can use the list directly
-HV=[]
+HV=['6000','6500','6900','7000','7200','7300','7500']
+#HV=[]
 eff=[]
 
 # check output directory

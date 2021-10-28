@@ -154,6 +154,5 @@ void eff_curve(int sn, string wp){
   efficiency->Write("Efficiency");
   effout->Close();  
 
-
 }
 
