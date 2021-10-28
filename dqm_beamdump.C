@@ -2,9 +2,10 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TF1.h"
-void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
+
+void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt, const char * loc) {
 	TString s("");
-	s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run1160.root",hv,sn,mt);
+	s.Form("%s_HV_%d_SN_%d_MaxTrig_%d_Run*.root",loc,hv,sn,mt);
 	std::cout<<s<<std::endl;
 	//TFile *f1 = TFile::Open(s);
 	//TTree *evt = (TTree*)f1->Get("evt");

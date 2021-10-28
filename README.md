@@ -16,7 +16,7 @@ Check your changes, if everything is OK,then make a pull request to Ece's reposi
  
 ## Analysis
 
-### Where is the data ?
+### Where is the data and How do I produce it ?
 
 We have two data types: raw (.dat) and ROOT (.root) version  
 Depending on the data taking location our raw and root files are stored in different folders.  
@@ -42,4 +42,24 @@ Edit the produce.sh for example change the Scan ID (variable y) , or change the 
 ```
 sh produce.sh
 ```
+
+###How do I produce DQM plots ?  
+
+Let's say you want to check dqm plots HV point 1 , Scan ID 508 and with 1000 Max Trigger:
+```
+cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
+source init.sh
+root -l 'dqm_beamdump.C(1,508,1000,"/data/gifOctober/roottrees/")'
+```
+###How do I run analysis code ? 
+
+Let's say you want to analyse HV point 5 , Scan ID 508 and with 5000 Max Trigger:
+For gifOctober runs muon window is fixed and it is between -1410 and -1350 you do not need ot change this.
+
+```
+cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
+source init.sh
+root -l 'run_ana_FEBv2.C(5,508,5000,-1410,-1350,"/data/gifOctober/roottrees/")'
+```
+
 
