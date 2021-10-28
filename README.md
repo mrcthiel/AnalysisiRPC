@@ -23,9 +23,23 @@ Depending on the data taking location our raw and root files are stored in diffe
 At the moment we are taking data in Gif++, we are using the machine in the preparation area.  
 You can access the machine (acqcmsmu01) via ssh: ssh acqcms@128.141.151.164  
 
-Raw files are stored in this direcotry:/ 
-/data/gifOctober/raw/  
+Raw files are stored in this direcotry: /data/gifOctober/raw/  
+Since there is no root installed at the moment in this machine we use the computer in beam dump area. 
+You can access this computer via : ssh acqcmsmu@PCLINUX-LYOCMS03     
 
-1 ) If you don't have the root fie for necessary run, please produce it.  
+If you don't have the root file for necessary run in LYOCMS03 machine in directory /data/gifOctober/roottrees/, please produce it.
+After you decide which one to run.  
 Production:  
+1 ) login to LYOCMS03 machine.
+2 ) If you want to work on Scan ID 508 for example, you need to copy raw files from LYOCMS01 to 03:  
+scp acqcms@128.141.151.164://data/gifOctober/raw/*SN_508* /data/gifOctober/raw/  
+3 ) 
+'''
+cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalyseFEBV2  
+souorce init.sh
+'''
+Edit the produce.sh for example change the Scan ID (variable y) , or change the MAx Trigger Value (Variable z).
+'''
+sh produce.sh
+'''
 
