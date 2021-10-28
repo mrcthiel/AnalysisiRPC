@@ -2,10 +2,8 @@
 
 
 ## Github staff
-1 ) Fork the repository 
-
-2 ) git remote add <your repo name> <your repo link.git>
- 
+1 ) Fork the repository  
+2 ) git remote add <your repo name> <your repo link.git>  
 3 ) git fetch <your repo name>
  
 4 ) git checkout -b localmaster <your repo name>/main
