@@ -4,7 +4,7 @@
 #include "TF1.h"
 void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt) {
 	TString s("");
-	s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+	s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run1160.root",hv,sn,mt);
 	std::cout<<s<<std::endl;
 	//TFile *f1 = TFile::Open(s);
 	//TTree *evt = (TTree*)f1->Get("evt");
