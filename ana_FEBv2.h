@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
 
@@ -23,7 +24,7 @@ public :
    Int_t	   mt_;
    Int_t	   muW1_;
    Int_t	   muW2_;
-
+   const char *    loc_;
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
@@ -40,7 +41,7 @@ public :
    TBranch        *b_nframe;   //!
    TBranch        *b_frame;   //!
 
-   ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2 , TTree *tree=0);
+   ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2 , const char * loc , TTree *tree=0);
    virtual ~ana_FEBv2();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -54,7 +55,7 @@ public :
 #endif
 
 #ifdef ana_FEBv2_cxx
-ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2, TTree *tree) : fChain(0) 
+ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2, const char * loc , TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -63,15 +64,10 @@ ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, Int_t muW1, Int_t muW2, TTre
    mt_ = mt;
    muW1_ = muW1;
    muW2_ = muW2;
+   loc_ = loc;
    TString 	   s("");
-   //s.Form("/data/root_trees/Run_%d.root",rn);
-   s.Form("/data/beamdump/root_trees/_HV_1_SN_168_MaxTrig_1000_Run_1160.root");
-   //s.Form("/data/beamdump/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run_*.root",hv,sn,mt);
-   //s.Form("/data/gifOctober/roottrees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
+   s.Form("%s_HV_%d_SN_%d_MaxTrig_%d_Run*.root",loc,hv,sn,mt);
    std::cout<<"Formatting the string"<<std::endl;
-   //s.Form("/home/elton/PhD/AnalysisiRPC/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
-   std::cout<<"Formatting done!!"<<std::endl;
-   //s.Form("/data/904/root_trees/_HV_%d_SN_%d_MaxTrig_%d_Run*.root",hv,sn,mt);
    if (tree == 0) {
 	   TChain *chain = new TChain("evt"); 
 	   chain->Add(s);
