@@ -33,13 +33,13 @@ Production:
 1 ) login to LYOCMS03 machine.
 2 ) If you want to work on Scan ID 508 for example, you need to copy raw files from LYOCMS01 to 03:  
 scp acqcms@128.141.151.164://data/gifOctober/raw/*SN_508* /data/gifOctober/raw/  
-3 ) 
-'''
+3 ) Converting raw file to ROOT file   
+```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalyseFEBV2  
 souorce init.sh
-'''
+```
 Edit the produce.sh for example change the Scan ID (variable y) , or change the MAx Trigger Value (Variable z).
-'''
+```
 sh produce.sh
-'''
+```
 
