@@ -67,4 +67,12 @@ Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs d
 The script called dreff.py is taking 2 arguments to read these files correctly.  
 You need to provide as a first argument the Scan ID, and the working point.  
 Working point can be Loose, Medium, Tight. 
- 
+You can choose the Scan ID from webdcs.  
+One thing that is hard coded in the script is the HV points. 
+Please keep them if you have the same HV points, if not please change them accordingly to the HV point list in the Voltages section of each run in webdcs.  
+
+```
+cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
+source init.sh
+python3 dreff.py 508 Loose
+``` 
