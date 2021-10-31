@@ -57,7 +57,7 @@ void ana_FEBv2::Loop()
    corr_HR[i] = corr_hr;
    i++;
    }
-   std::cout << corr_LR[0] << " " << corr_HR[0] << std::endl;
+   //std::cout << corr_LR[0] << " " << corr_HR[0] << std::endl;
    std::cout << "Muon Window:" << muW1_ << " " << muW2_ << std::endl;
    std::cout << "Bkg Window:" << muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) << " " << muW2_-4000 << std::endl;
     double time_corr[3] = {12.39 ,12.24,12.5 };
@@ -82,7 +82,7 @@ void ana_FEBv2::Loop()
    bool debug=false;
    float y = 0;
    float last_bc0 = 0;
-   float run_duration_in_sec = 0;
+   float run_duration_in_sec = 0.00;
    int any_strip_fired=0;
    int trig_exists=0;
    int ntrig_all=0;
@@ -148,12 +148,10 @@ void ana_FEBv2::Loop()
    TH1F *hbc0 = (TH1F*)gDirectory->Get("histbc0");
    last_bc0 = hbc0->GetXaxis()->GetXmax();
    std::cout<<"integral/3 : "<<hbc0->Integral()/3<<" " << last_bc0 <<" "<<hbc0->FindLastBinAbove(1)<<std::endl;
-   run_duration_in_sec = 10*(abs(muW1_)-abs(muW2_))*pow(10,-9);
-   //run_duration_in_sec = ((hbc0->Integral()/3)*90*pow(10,-6));
+   run_duration_in_sec = 10*abs(abs(muW1_)-abs(muW2_))*pow(10,-9);
    TH1F *htrig= new TH1F("htrig", "trigger time",91000,0,91000);
    fChain->Draw("m_time(m_traw(frame))>>htrig","(m_channel(frame)==33)");
    std::cout<<"All triggers /3 : "<< (htrig->Integral())/3 << std::endl;
-   //run_duration_in_sec = ((htrig->Integral())/3 )*90*pow(10,-6); 
 
    std::cout<<"The data taking time is : "<< run_duration_in_sec <<std::endl;
    //fChain->Draw("(1)>>histTrigger","(m_channel(frame)==33)");
@@ -172,9 +170,6 @@ void ana_FEBv2::Loop()
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       //std::cout<<"Hello "<<jentry<<" bc0 "<<bc0<<std::endl;
-      // if (Cut(ientry) < 0) continue;
-     // float delta[3][100];
-       //std::vector<float> delta[48];
        deltaT = -999;
       float sum[3][100];
        std::vector<float> time_hr[3][100];
@@ -237,18 +232,14 @@ void ana_FEBv2::Loop()
             }
         } // end of first frame loop
        
-       if (ntrig_event!=3 and ntrig_event!=0) std::cout<< "nTRIG in this event : "<< ntrig_event  <<std::endl;
+       //if (ntrig_event!=3 and ntrig_event!=0) std::cout<< "nTRIG in this event : "<< ntrig_event  <<std::endl;
        if (!(trig_exists && ntrig_event ==3) ) continue;
-       //if (!(trig_exists) ) continue;
        if (bad_trig) continue;
 
-
-
-
-       
+ 	std::cout<< "!!! Triggers passed !!!!"     << std::endl; 
        for (uint32_t i=0;i<48;i++) {
            
-           //std::cout<< "LR: "<< allStrips[i].LRframe.size()<<" HR: "<<allStrips[i].HRframe.size() << std::endl;
+           std::cout<< "LR: "<< allStrips[i].LRframe.size()<<" HR: "<<allStrips[i].HRframe.size() << std::endl;
            
            for (uint32_t fhr=0; fhr<allStrips[i].HRframe.size(); fhr++)
            { // frame HR loop
@@ -262,10 +253,10 @@ void ana_FEBv2::Loop()
 		   if ( ((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-1000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-1000 ))
         //trig = 2000 and 87000, signal is 1000,         
 	{
-                   //std::cout << "(muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))): " << (muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))) << std::endl;
+                   std::cout << "(muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))): " << (muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))) << std::endl;
                    //std::cout << "((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]): " << ((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])])) << std::endl; 
 		   allStrips[i].HRframeBkg[fhr] = true;
-                   hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+                   hLRn->Fill(m_strip(frame[i]),1/float(run_duration_in_sec*120)); //For Noise; newly added histogram
 	       }
                }
                if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
@@ -282,7 +273,7 @@ void ana_FEBv2::Loop()
  		   if ( ((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-1000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-1000 ))
                 { 
 		   allStrips[i].LRframeBkg[flr] = true;
-                   hHRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+                   hHRn->Fill(m_strip(frame[i]),1/float(run_duration_in_sec*120)); //For Noise; newly added histogram
 	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
               }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;
@@ -327,7 +318,7 @@ void ana_FEBv2::Loop()
        if (tight_num) {nANDstrip_tight_fired++;}
        hnPairs->Fill(n_paired_srip);
 
-   //std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
+   std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
 
        
 } //Event loop ends
@@ -338,8 +329,8 @@ void ana_FEBv2::Loop()
     eff_medium = (nANDstrip_medium_fired)/float(ntrig_allevent);
     myfile<<"Efficiency AND Tight: " << (nANDstrip_tight_fired)/float(ntrig_allevent) <<"\n";
     myfile<<"Efficiency AND Medium err : " <<  sqrt((1-eff_medium)*eff_medium/float(ntrig_allevent)) <<"\n";
-    myfile<<"hHRn->Integral()/ntrig_allevent/48: " << hHRn->Integral()/ntrig_allevent/48 <<"\n";
-    myfile<<"hLRn->Integral()/ntrig_allevent/48: " << hLRn->Integral()/ntrig_allevent/48 <<"\n";
+    myfile<<"hHRn->Integral()/ntrig_allevent/48: " << (hHRn->Integral())/(ntrig_allevent/48) <<"\n";
+    myfile<<"hLRn->Integral()/ntrig_allevent/48: " << (hLRn->Integral())/(ntrig_allevent/48) <<"\n";
     myfile.close();
 
 gStyle->SetOptStat(0);
@@ -367,9 +358,9 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.root",hv_,sn_,mt_)
 c1->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.pdf",hv_,sn_,mt_);
 c1->SaveAs(s);
-s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.png",hv_,sn_,mt_);
-c1->SaveAs(s);
-
+//s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.png",hv_,sn_,mt_);
+//c1->SaveAs(s);
+/*
 //The newly added noise histograms go here
 gStyle->SetOptStat(0);
 TCanvas *can1 = new TCanvas("can1","The Ntuple canvas",200,10,780,780);
@@ -380,14 +371,14 @@ newpad1->Draw(); newpad2->Draw();
 newpad1->cd();
 newpad1->SetGrid();
 newpad1->SetLogy();
-hLRn->Scale(1./ntrig_allevent);
+hLRn->Scale(1/float(ntrig_allevent));
 hLRn->Draw("Hist");
 hLRn->GetYaxis()->SetTitle("Noise Hz/cm");
 hLRn->GetXaxis()->SetTitle("Strips");
 newpad2->cd();
 newpad2->SetGrid();
 //newpad2->SetLogy();
-hHRn->Scale(1./ntrig_allevent);
+hHRn->Scale(1/float(ntrig_allevent));
 hHRn->Draw("Hist");
 hHRn->GetYaxis()->SetTitle("Noise Hz/cm");
 hHRn->GetXaxis()->SetTitle("Strips");
@@ -528,7 +519,7 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.pdf",hv_,sn_,mt_);
 c11->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.png",hv_,sn_,mt_);
 c11->SaveAs(s);
-
+*/
 /*
 TCanvas *c_a3n = new TCanvas("c_a3n","The Ntuple canvas",200,10,780,780);
 TPad *pad_a3n = new TPad("pad_a3n","This is pad10",0.05,0.05,0.98,0.55,21);
