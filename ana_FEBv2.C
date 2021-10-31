@@ -87,6 +87,8 @@ void ana_FEBv2::Loop()
    int ntrig_allevent=0;
    int ntriggerHR_signal=0;
    int ntriggerLR_signal=0;
+   int ntriggerHR_bkg=0;
+   int ntriggerLR_bkg=0;
    int ntriggerHR3ns_signal=0;
    int ntriggerLR3ns_signal=0;
    Bool_t histo_exists=0;
@@ -193,6 +195,8 @@ void ana_FEBv2::Loop()
       Dstrip_bkg_fired=0; 
       ntriggerHR_signal=0;
       ntriggerLR_signal=0;
+      ntriggerHR_bkg=0;
+      ntriggerLR_bkg=0;
       ntriggerHR3ns_signal=0;
       ntriggerLR3ns_signal=0;
       has_paired_strips=0;
