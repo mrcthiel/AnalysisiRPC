@@ -62,6 +62,9 @@ void ana_FEBv2::Loop()
    std::cout << "Bkg Window:" << muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) << " " << muW2_-4000 << std::endl;
     double time_corr[3] = {12.39 ,12.24,12.5 };
     //double time_corr[3] = {0 ,0,0 };
+    double time_min = 4000;
+    double time_max = 87000;
+
 
     double time_corr_fine[3][32] = {
        {0.00, -0.37, 1.06, 5.59, 0.59, 3.83, 0.15, 2.84, 2.19, 0.95, 2.52, 3.89, 9.14, 2.62, 4.05, 7.11, 3.48, 8.20, 7.89, 2.97, 7.50, 4.08, 4.79, 3.10, 4.83, 2.84, 8.87, 7.16, -0.01, 1.85, 3.49, 0.57},
@@ -145,7 +148,7 @@ void ana_FEBv2::Loop()
    TH1F *hbc0 = (TH1F*)gDirectory->Get("histbc0");
    last_bc0 = hbc0->GetXaxis()->GetXmax();
    std::cout<<"integral/3 : "<<hbc0->Integral()/3<<" " << last_bc0 <<" "<<hbc0->FindLastBinAbove(1)<<std::endl;
-   run_duration_in_sec = (last_bc0*90*pow(10,-6));
+   run_duration_in_sec = 10*(abs(muW1_)-abs(muW2_))*pow(10,-9);
    //run_duration_in_sec = ((hbc0->Integral()/3)*90*pow(10,-6));
    TH1F *htrig= new TH1F("htrig", "trigger time",91000,0,91000);
    fChain->Draw("m_time(m_traw(frame))>>htrig","(m_channel(frame)==33)");
@@ -185,6 +188,7 @@ void ana_FEBv2::Loop()
 
            stripTimes allStrips[48];
 
+
       any_strip_fired=0;
       trig_exists=0;
       bad_trig = 0;
@@ -211,7 +215,7 @@ void ana_FEBv2::Loop()
             else if (m_channel(frame[i])==33){
                 if (trig[m_fpga(frame[i])] != 0) bad_trig = 1; // prevents firing of one of the fpga's more than once
                 trig[m_fpga(frame[i])]=m_time(m_traw(frame[i]));
-                if ((trig[m_fpga(frame[i])]) < 87000 and trig[m_fpga(frame[i])] > 2000) {
+                if ((trig[m_fpga(frame[i])]) < time_max and trig[m_fpga(frame[i])] > time_min) {
 		    //std::cout<<"fpga: "<< m_fpga(frame[i]) << "Trig Exists !!!!! " << std::endl;
                     trig_exists=1; // trigger exits in this event
                     ntrig_event++; // This value must reach 3 for all events.
@@ -223,12 +227,12 @@ void ana_FEBv2::Loop()
                 if (c_side(m_channel(frame[i])) > 0.5){
                     //LR stips
                     allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
-                    hLR->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For Noise
+                    hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
                     }
                 if (c_side(m_channel(frame[i])) < 0.5){
                     //HR strips
                     allStrips[m_strip(frame[i])].addHRframe(i, m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
-                    hHR->Fill(m_strip(frame[i]),1/(run_duration_in_sec*150)); //For noise
+                    hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For noise
                     }
             }
         } // end of first frame loop
@@ -237,6 +241,10 @@ void ana_FEBv2::Loop()
        if (!(trig_exists && ntrig_event ==3) ) continue;
        //if (!(trig_exists) ) continue;
        if (bad_trig) continue;
+
+
+
+
        
        for (uint32_t i=0;i<48;i++) {
            
@@ -251,10 +259,13 @@ void ana_FEBv2::Loop()
                {
                    // HR not in muon window
                    allStrips[i].HRframeOK[fhr] = false;
-		   if ( !((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-4000 ))
-                { 
+		   if ( ((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_-1000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_-1000 ))
+        //trig = 2000 and 87000, signal is 1000,         
+	{
+                   //std::cout << "(muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))): " << (muW1_-1000-(9*(abs(muW1_)-abs(muW2_)))) << std::endl;
+                   //std::cout << "((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]): " << ((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])])) << std::endl; 
 		   allStrips[i].HRframeBkg[fhr] = true;
-                   hLRn->Fill(m_strip(frame[i]),1/(0.01*run_duration_in_sec*150)); //For Noise; newly added histogram
+                   hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
 	       }
                }
                if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
@@ -268,10 +279,10 @@ void ana_FEBv2::Loop()
                {
                    // LR not in muon window
                    allStrips[i].LRframeOK[flr] = false;
- 		   if ( !((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-4000 ))
+ 		   if ( ((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_-1000-(9*(abs(muW1_)-abs(muW2_))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_-1000 ))
                 { 
 		   allStrips[i].LRframeBkg[flr] = true;
-                   hHRn->Fill(m_strip(frame[i]),1/(0.01*run_duration_in_sec*150)); //For Noise; newly added histogram
+                   hHRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
 	      }   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
               }
                if (allStrips[i].LRframeOK[flr]) ntriggerLR_signal++;
@@ -315,6 +326,9 @@ void ana_FEBv2::Loop()
        if (medium_num) {nANDstrip_medium_fired++;}
        if (tight_num) {nANDstrip_tight_fired++;}
        hnPairs->Fill(n_paired_srip);
+
+   //std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
+
        
 } //Event loop ends
     
@@ -324,8 +338,9 @@ void ana_FEBv2::Loop()
     eff_medium = (nANDstrip_medium_fired)/float(ntrig_allevent);
     myfile<<"Efficiency AND Tight: " << (nANDstrip_tight_fired)/float(ntrig_allevent) <<"\n";
     myfile<<"Efficiency AND Medium err : " <<  sqrt((1-eff_medium)*eff_medium/float(ntrig_allevent)) <<"\n";
+    myfile<<"hHRn->Integral()/ntrig_allevent/48: " << hHRn->Integral()/ntrig_allevent/48 <<"\n";
+    myfile<<"hLRn->Integral()/ntrig_allevent/48: " << hLRn->Integral()/ntrig_allevent/48 <<"\n";
     myfile.close();
-    
 
 gStyle->SetOptStat(0);
 TCanvas *c1 = new TCanvas("c1","The Ntuple canvas",200,10,780,780);
@@ -336,6 +351,7 @@ pad1->Draw(); pad2->Draw();
 pad1->cd();
 pad1->SetGrid();
 pad1->SetLogy();
+//hLR->Scale(1/ntrig_allevent);
 hLR->Draw("Hist");
 hLR->GetYaxis()->SetTitle("Noise Hz/cm");
 hLR->GetXaxis()->SetTitle("Strips");
@@ -351,6 +367,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.root",hv_,sn_,mt_)
 c1->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.pdf",hv_,sn_,mt_);
 c1->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__avarage_noise_side.png",hv_,sn_,mt_);
+c1->SaveAs(s);
 
 //The newly added noise histograms go here
 gStyle->SetOptStat(0);
@@ -362,12 +380,14 @@ newpad1->Draw(); newpad2->Draw();
 newpad1->cd();
 newpad1->SetGrid();
 newpad1->SetLogy();
+hLRn->Scale(1./ntrig_allevent);
 hLRn->Draw("Hist");
 hLRn->GetYaxis()->SetTitle("Noise Hz/cm");
 hLRn->GetXaxis()->SetTitle("Strips");
 newpad2->cd();
 newpad2->SetGrid();
-newpad2->SetLogy();
+//newpad2->SetLogy();
+hHRn->Scale(1./ntrig_allevent);
 hHRn->Draw("Hist");
 hHRn->GetYaxis()->SetTitle("Noise Hz/cm");
 hHRn->GetXaxis()->SetTitle("Strips");
@@ -377,7 +397,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__new_noise_histo.root",hv_,sn_,mt_);
 can1->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__new_noise_histo.pdf",hv_,sn_,mt_);
 can1->SaveAs(s);
-
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__new_noise_histo.png",hv_,sn_,mt_);
+can1->SaveAs(s);
 
 TCanvas *c2 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
 TPad *pad4 = new TPad("pad4","This is pad4",0.02,0.02,0.98,0.98,21);
@@ -399,6 +420,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_srip.root",hv_,sn_,mt_);
 c2->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_srip.pdf",hv_,sn_,mt_);
 c2->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_srip.png",hv_,sn_,mt_);
+c2->SaveAs(s);
 TCanvas *cPairs = new TCanvas("cPairs","The Ntuple canvas",200,10,900,780);
 TPad *padP = new TPad("padP","This is padP",0.02,0.02,0.98,0.98,21);
 padP->UseCurrentStyle();
@@ -419,7 +442,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__n_paired_srip.root",hv_,sn_,mt_);
 cPairs->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__n_paired_srip.pdf",hv_,sn_,mt_);
 cPairs->SaveAs(s);
-    
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__n_paired_srip.png",hv_,sn_,mt_);
+cPairs->SaveAs(s);    
 TCanvas *chdeltaT_1D = new TCanvas("chdeltaT_1D","The Ntuple canvas",200,10,900,780);
 TPad *padhdeltaT_1D = new TPad("padhdeltaT_1D","This is hdeltaT_1D",0.02,0.02,0.98,0.98,21);
 padhdeltaT_1D->UseCurrentStyle();
@@ -442,6 +466,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_1D_srip.root",hv_,sn_,mt_);
 chdeltaT_1D->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_1D_srip.pdf",hv_,sn_,mt_);
 chdeltaT_1D->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__deltaT_1D_srip.png",hv_,sn_,mt_);
+chdeltaT_1D->SaveAs(s);
 
 TCanvas *c3 = new TCanvas("c3","The Ntuple canvas",200,10,780,780);
 TPad *pad3 = new TPad("pad3","This is pad3",0.05,0.05,0.98,0.55,21);
@@ -459,6 +485,8 @@ c3->Update();
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side.root",hv_,sn_,mt_);
 c3->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side.pdf",hv_,sn_,mt_);
+c3->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side.png",hv_,sn_,mt_);
 c3->SaveAs(s);
     
 TCanvas *c10 = new TCanvas("c10","The Ntuple canvas",200,10,780,780);
@@ -478,6 +506,8 @@ s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side_1d.root",hv_,sn_,mt_);
 c10->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side_1d.pdf",hv_,sn_,mt_);
 c10->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__DeltaTrig_side_1d.png",hv_,sn_,mt_);
+c10->SaveAs(s);
 
 TCanvas *c11 = new TCanvas("c11","The Ntuple canvas",200,10,780,780);
 TPad *pad20 = new TPad("pad20","This is pad10",0.05,0.05,0.98,0.55,21);
@@ -495,6 +525,8 @@ c11->Update();
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.root",hv_,sn_,mt_);
 c11->SaveAs(s);
 s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.pdf",hv_,sn_,mt_);
+c11->SaveAs(s);
+s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_%d__nStrip_side_1d.png",hv_,sn_,mt_);
 c11->SaveAs(s);
 
 /*
