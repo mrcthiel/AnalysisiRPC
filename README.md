@@ -36,7 +36,7 @@ scp acqcms@128.141.151.164://data/gifOctober/raw/*SN_508* /data/gifOctober/raw/
 3 ) Converting raw file to ROOT file   
 ```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalyseFEBV2  
-souorce init.sh
+source init.sh
 ```
 Edit the produce.sh for example change the Scan ID (variable y) , or change the MAx Trigger Value (Variable z).
 ```
