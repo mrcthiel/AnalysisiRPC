@@ -1,10 +1,20 @@
 import sys,os
 
-targetDir = './outputs/'
 sn = sys.argv[1]
 wp = sys.argv[2]
+onout = sys.argv[3]
+targetDir = './'+onout+'/outputs/'
+HV1 = sys.argv[4]
+HV2 = sys.argv[5]
+HV3 = sys.argv[6]
+HV4 = sys.argv[7]
+HV5 = sys.argv[8]
+HV6 = sys.argv[9]
+HV7 = sys.argv[10]
 
-HV=['6000','6500','6900','7000','7200','7300','7500']
+HV=[HV1,HV2,HV3,HV4,HV5,HV6,HV7] 
+
+
 #HV=[]
 eff=[]
 
@@ -44,11 +54,12 @@ while True:
     else: break
 
 # write txt for eff_curve.C All blanks are "TAB ^I"
-wf = open('eff_input_SN'+sn+'_'+wp+'.txt','w')
+wf = open('eff_input_SN'+sn+'_'+wp+'_'+onout+'.txt','w')
 wf.write("HV 	Eff	Eff_err")
 for i in range(len(eff)):
     wf.write("\n"+str(HV[i])+"	"+str(round(eff[i],1))+"	"+str(err))
 wf.close()
 
 # run the eff_curve with input
-os.system("root -l -b -q eff_curve.C"+"'("+sn+","+"\""+wp+"\")'")
+#os.system("root -l -b -q eff_curve.C"+"'("+sn+","+"\""+wp+"\")'")
+
