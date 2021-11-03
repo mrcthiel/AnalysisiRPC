@@ -54,17 +54,53 @@ root -l 'dqm_beamdump.C(1,508,1000,"/data/gifOctober/roottrees/")'
 ### How do I run analysis code ? 
 
 Let's say you want to analyse HV point 5 , Scan ID 508 and with 5000 Max Trigger:
-For gifOctober runs muon window is fixed and it is between -1410 and -1350 you do not need ot change this.
+For gifOctober runs muon window is fixed and it is between -1410 and -1350.
 
 ```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
 source init.sh
 root -l 'run_ana_FEBv2.C(5,508,5000,-1410,-1350,"/data/gifOctober/roottrees/")'
 ```
+To produce de S curve with background subtraction, one needs also run the analysis out of the muon window, then first copy what you ran in a new directory:
+```
+mkdir on_muon_window
+cp -r ScanId_508 on_muon_window/
+cp -r outputs on_muon_window/
+```
+Now run the analysis code out of the muon window:
+```
+cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
+source init.sh
+root -l 'run_ana_FEBv2.C(5,508,5000,-2410,-2350,"/data/gifOctober/roottrees/")'
+```
+and copy it in a new directory
+```
+mkdir out_muon_window
+cp -r ScanId_508 out_muon_window/
+cp -r outputs out_muon_window/
+```
+
 
 ### How do I obtain efficiency curves ? 
 Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs directory.  
-The script called dreff.py is taking 2 arguments to read these files correctly.  
-You need to provide as a first argument the Scan ID, and the working point.  
+The script called dreff.py is taking Scan ID and working point arguments to read these files correctly plus the directory for on/out muon window and the HV points (from google sheets).  
+You need to provide as a first argument the Scan ID, second the working point, third the directory for on/out muon window  and all HV points.  
 Working point can be Loose, Medium, Tight. 
  
+For example, for ScanId 508, on muon window, and Medium working point:
+```
+python dreff.py 508 Medium on_muon_window 6 6.5 6.9 7 7.1 7.2 7.5
+```
+Run again for out muon window:
+```
+python dreff.py 508 Medium out_muon_window 6 6.5 6.9 7 7.1 7.2 7.5
+```
+And finally, the macro that produces the S curve:
+```
+root -l -b -q 'eff_curve.C(508,"Medium")'
+```
+
+
+
+
+
