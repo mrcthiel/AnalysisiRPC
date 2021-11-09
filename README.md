@@ -54,32 +54,12 @@ root -l 'dqm_beamdump.C(1,508,1000,"/data/gifOctober/roottrees/")'
 ### How do I run analysis code ? 
 
 Let's say you want to analyse HV point 5 , Scan ID 508 and with 5000 Max Trigger:
-For gifOctober runs muon window is fixed and it is between -1410 and -1350.
 
 ```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
 source init.sh
-root -l 'run_ana_FEBv2.C(5,508,5000,-1410,-1350,"/data/gifOctober/roottrees/")'
+root -l 'run_ana_FEBv2.C(5,508,5000,"/data/gifOctober/roottrees/")'
 ```
-To produce de S curve with background subtraction, one needs also run the analysis out of the muon window, then first copy what you ran in a new directory:
-```
-mkdir on_muon_window
-cp -r ScanId_508 on_muon_window/
-cp -r outputs on_muon_window/
-```
-Now run the analysis code out of the muon window:
-```
-cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
-source init.sh
-root -l 'run_ana_FEBv2.C(5,508,5000,-2410,-2350,"/data/gifOctober/roottrees/")'
-```
-and copy it in a new directory
-```
-mkdir out_muon_window
-cp -r ScanId_508 out_muon_window/
-cp -r outputs out_muon_window/
-```
-
 
 ### How do I obtain efficiency curves ? 
 Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs directory.  
