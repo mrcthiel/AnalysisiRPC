@@ -66,7 +66,7 @@ ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , Int_t mt, /*Int_t muW1, Int_t muW2,*/ 
  //  muW2_ = muW2;
    loc_ = loc;
    TString 	   s("");
-   s.Form("%s_HV_%d_SN_%d_MaxTrig_%d_Run1176.root",loc,hv,sn,mt);
+   s.Form("%s_HV_%d_SN_%d_MaxTrig_%d_Run*.root",loc,hv,sn,mt);
    std::cout<<"Formatting the string"<<std::endl;
    if (tree == 0) {
 	   TChain *chain = new TChain("evt"); 

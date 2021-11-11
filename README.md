@@ -81,6 +81,3 @@ root -l -b -q 'eff_curve.C(508,"Medium")'
 ```
 
 
-
-
-
