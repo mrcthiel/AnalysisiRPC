@@ -1,211 +1,187 @@
-void eff_curve(int sn, string wp){
-
-  cout << "SN=" << sn << " : Working Point=" << wp << endl;
-
-  TGraphErrors* efficiency = new TGraphErrors();
-
-  // open a file in read mode.
-  string fileInName("");
-  string fileInNameOut("");
-
-  fileInName = Form("eff_input_SN%d_%s_on.txt", sn, wp.c_str());
-  fileInNameOut = Form("eff_input_SN%d_%s_out.txt", sn, wp.c_str());
-  
-  //cout << fileInName.c_str() << endl;
-  string sHV, sEff, sEff_Err, line, lines, sTitle, sTitles;
-  float HV, Eff, Eff_Err, HVmin, HVmax;
-
-  int i = -2;
-  ifstream readFile(fileInName.c_str());
-  std::vector<float> eff_on;
-  std::vector<float> HV_v;
-  std::vector<float> eff_out;
+#include<stdlib.h>
+#include<stdio.h>
 
 
-  while(getline(readFile,line))   {
-    if (i == -2){
-      i++;
-      sTitle=line;
-      continue;
-    }
+void eff_curve(int sn, int count, ...){
 
-
-      i++;
-      stringstream iss(line);
-      getline(iss, sHV, '\t');
-      getline(iss, sEff, '\t');
-      getline(iss, sEff_Err, '\t');
-      
-      istringstream fsHV(sHV); fsHV >> HV;
-      istringstream fsEff(sEff); fsEff >> Eff;
-      istringstream fsEff_Err(sEff_Err); fsEff_Err >> Eff_Err;
-      cout << "At " << sHV.c_str() << " eff = " <<  sEff.c_str() << " #pm " << sEff_Err.c_str() << endl;
-      //efficiency->SetPoint(i,HV, Eff/100.);
-      //efficiency->SetPointError(i,1e-3, sqrt(Eff/100*(1-Eff/100))/sqrt(1000));
-      eff_on.push_back(Eff/100.);
-      float HV_temp = HV*1000;
-      HV_v.push_back(HV_temp);
-      if (i == 0) HVmin = HV;
-  }
-
-  ifstream readFileNew(fileInNameOut.c_str());
-  i = -2;
-  while(getline(readFileNew,lines))   {
-    if (i == -2){
-      i++;
-      sTitles=lines;
-      continue;
-    }
-      i++;
-      stringstream iss(lines);
-      getline(iss, sHV, '\t');
-      getline(iss, sEff, '\t');
-      getline(iss, sEff_Err, '\t');
-      istringstream fsHV(sHV); fsHV >> HV;
-      istringstream fsEff(sEff); fsEff >> Eff;
-      istringstream fsEff_Err(sEff_Err); fsEff_Err >> Eff_Err;
-      cout << "At " << sHV.c_str() << " eff = " <<  sEff.c_str() << " #pm " << sEff_Err.c_str() << endl;
-      eff_out.push_back(Eff/100.);
-      HV = HV*1000;
-      if (i == 0) HVmin = HV;
-  }
-
-
-  HVmax = HV;
-
-cout << "HVmin: " << HVmin << ";  HVmax: " << HVmax << endl;
-
-
-  readFile.close();
- 
-  for(int j=0;j<eff_on.size();j++){
-      
-      float eff_new = (eff_on.at(j)-eff_out.at(j))/(1.-eff_out.at(j));
-      cout << "At " << HV_v.at(j) << " eff = " << eff_new << endl;// " #pm " << sqrt(eff_new/100*(1-eff_new/100))/sqrt(1000)  << endl;
-
-      efficiency->SetPoint(j,HV_v.at(j),eff_new);
-      efficiency->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
-
-  }
-
-  
-
-  //TF1* sigmoid = new TF1("sigmoid","[0]/(1+exp([1]*([2]-x)))",HVmin-100,HVmax+100);
-  TF1* sigmoid = new TF1("sigmoid","(1-sqrt((1-[0])*(1-[0])))/(1+exp([1]*([2]-x)))",6000,7200);
-  sigmoid->SetParName(0,"#epsilon_{max}");
-  sigmoid->SetParName(1,"#lambda");
-  sigmoid->SetParName(2,"HV_{50%}");
-  sigmoid->SetParameter(0,0.98);
-  sigmoid->SetParameter(1,0.01);
-  sigmoid->SetParameter(2,7000);
-
-            //****************************************************
-
-
-  efficiency->Fit(sigmoid);
-  
-  efficiency->SetMarkerStyle(22);
-  efficiency->SetMarkerSize(2);
-
-  sTitle = sTitle + "; HVeff; Eff";
-  TH1D* Plotter = new TH1D("Plotter", sTitle.c_str(), 1, HVmin-100,HVmax+100);
- 
-  Plotter->SetStats(0);
- 
-  Plotter->SetMinimum(0.);
-  Plotter->SetMaximum(1.08);
- 
-  Plotter->Draw();
- 
- efficiency->Draw("P");
- 
- 
-  //gPad->SetLogy(1);
- 
-  
- 
-//  TLegend *leg = new TLegend(0.608739,0.1024784,0.8085924,0.2523343,NULL,"brNDC");
-  TLegend *leg = new TLegend(0.1,0.01,0.3,0.17,NULL,"brNDC");
-  leg->SetBorderSize(0);
-  leg->SetTextFont(62);
-  leg->SetTextSize(0.04);
-  leg->SetLineColor(1);
-  leg->SetLineStyle(1);
-  leg->SetLineWidth(1);
-  leg->SetFillColor(0);
-  leg->SetFillStyle(1001);
-
-  
-  leg->AddEntry(efficiency,"Efficiency","P");
-
-  //  leg->Draw();
-
-
-  	
-  double p1 = sigmoid->GetParameter(0);
-  p1 = 1-sqrt((1-p1)*(1-p1));
-  double p2 = sigmoid->GetParameter(1);
-  double p3 = sigmoid->GetParameter(2);
-   	
-
-  double uLimit = HVmax, lLimit = HVmin;
-
-  TLatex* ltx = new TLatex();
-  ltx->SetTextSize(0.04);
-
-  double knee = p3 - log(1/0.95-1)/p2;
-
-
-  
-  double WP = knee+120;
-  cout << "Val at WP " << WP << endl;
-
-  
-  TLine* lWP = new TLine(WP, 0., WP, 1);
-  lWP->SetLineStyle(2);
-  lWP->Draw("SAME");
-
-  double shift = 0.5;
-  
-  double add = (uLimit-lLimit)/11., up = 0.3; 
-/*  ltx->DrawLatex(WP+shift*add, 0.42+up, Form("Eff(WP) = %.2f", sigmoid->Eval(WP)));
-  ltx->DrawLatex(WP+shift*add, 0.35+up, Form("WP = %.0f V", WP));
-  ltx->DrawLatex(WP+shift*add, 0.27+up, Form("knee = %.0f V", knee));
-  ltx->DrawLatex(WP+shift*add, 0.20+up, Form("HV 50% = %.0f V", p3));
-*/
-  ltx->DrawLatex(6000, 0.28, Form("Eff(WP) = %.2f", sigmoid->Eval(WP)));
-  ltx->DrawLatex(6000, 0.21, Form("WP = %.0f V", WP));
-  ltx->DrawLatex(6000, 0.14, Form("knee = %.0f V", knee));
-  ltx->DrawLatex(6000, 0.07, Form("HV 50% = %.0f V", p3));
+	std::vector<char *> wp;
+	wp.push_back("nocut");
+	wp.push_back("loose");
+	wp.push_back("medium");
+	wp.push_back("tight");
+	wp.push_back("hr");
+	wp.push_back("lr");
 
 
 
+	std::vector<double> HVs;
+	std::vector<float> effnocut_on, effloose_on, effmedium_on, efftight_on, effhr_on, efflr_on, effnocut_out, effloose_out, effmedium_out, efftight_out, effhr_out, efflr_out;
+	HVs.clear();
+	effnocut_on.clear();
+	effloose_on.clear();
+	effmedium_on.clear();
+	efftight_on.clear();
+	effhr_on.clear();
+	efflr_on.clear();
+	effnocut_out.clear();
+	effloose_out.clear();
+	effmedium_out.clear();
+	efftight_out.clear();
+	effhr_out.clear();
+	efflr_out.clear();
 
-  TLine* plateau = new TLine(lLimit-50, p1, uLimit+50, p1);
-  plateau->SetLineStyle(2);
-  plateau->Draw();
+	va_list list;
+	va_start(list, count);
+	double HV_val=0.;
+	for(int j=0; j<count; j++){
+		HV_val = va_arg(list, double);
+		HVs.push_back(HV_val);
+	}
+	va_end(list);
 
-  add = (uLimit-lLimit)/11.;
-  
-  if ((knee - lLimit) < (uLimit-lLimit)*(3/11.)) add = knee + add;
-  else add = lLimit+add;
+	for(int j=0; j<count; j++){
+		string fileName("");
+		fileName = Form("outputs/_HV_%d_SN_%d_MaxTrig_.txt", (j+1), sn);
+		FILE *fp = fopen(fileName.c_str(),"r");
+		Int_t ncols;
+		float effnocuton, efflooseon, effmediumon, efftighton, effhron, efflron;
+		float effnocutout, efflooseout, effmediumout, efftightout, effhrout, efflrout;
+		ncols=0;
+		ncols=fscanf(fp,"%f", &effnocuton);
+		effnocut_on.push_back(effnocuton);
+		ncols=1;
+		ncols=fscanf(fp,"%f", &efflooseon);
+		effloose_on.push_back(efflooseon);
+		ncols=2;
+		ncols=fscanf(fp,"%f", &effmediumon);
+		effmedium_on.push_back(effmediumon);
+		ncols=3;
+		ncols=fscanf(fp,"%f", &efftighton);
+		efftight_on.push_back(efftighton);
+		ncols=4;
+		ncols=fscanf(fp,"%f", &effhron);
+		effhr_on.push_back(effhron);
+		ncols=5;
+		ncols=fscanf(fp,"%f", &efflron);
+		efflr_on.push_back(efflron);
+		ncols=6;
+		ncols=fscanf(fp, "%*[^\n]\n");
+		ncols=7;
+		ncols=fscanf(fp,"%f", &effnocutout);
+		effnocut_out.push_back(effnocutout);
+		ncols=8;
+		ncols=fscanf(fp,"%f", &efflooseout);
+		effloose_out.push_back(efflooseout);
+		ncols=9;
+		ncols=fscanf(fp,"%f", &effmediumout);
+		effmedium_out.push_back(effmediumout);
+		ncols=10;
+		ncols=fscanf(fp,"%f", &efftightout);
+		efftight_out.push_back(efftightout);
+		ncols=11;
+		ncols=fscanf(fp,"%f", &effhrout);
+		effhr_out.push_back(effhrout);
+		ncols=12;
+		ncols=fscanf(fp,"%f", &efflrout);
+		efflr_out.push_back(efflrout);
+		//fp->fclose();
+		fclose(fp);
+	}
 
-  ltx->DrawLatex(add, p1+0.02, Form("plateau = %.2f", p1));
 
-  cout << "knee = " << knee << endl;
+	//loop no wp
+	for(int i=0;i<wp.size();i++){
+		std::vector<float> eff_on, eff_out;
+		eff_on.clear();
+		eff_out.clear();
+		if(i==0){eff_on=effnocut_on; eff_out=effnocut_out;}
+		if(i==1){eff_on=effloose_on; eff_out=effloose_out;}
+		if(i==2){eff_on=effmedium_on; eff_out=effmedium_out;}
+		if(i==3){eff_on=efftight_on; eff_out=efftight_out;}
+		if(i==4){eff_on=effhr_on; eff_out=effhr_out;}
+		if(i==5){eff_on=efflr_on; eff_out=efflr_out;}
 
-  string outfile = "Efficiency";
-  string outfile_png = Form("Efficiency_SN%d_%s.png", sn, wp.c_str());
-  string outfile_pdf = Form("Efficiency_SN%d_%s.pdf", sn, wp.c_str());
-  string outfile_root =Form("Efficiency_SN%d_%s.root", sn ,wp.c_str());
+		TGraphErrors* efficiency = new TGraphErrors();
+                TGraphErrors* efficiency_temp = new TGraphErrors();
 
-  gPad->SaveAs(outfile_png.c_str());
-  gPad->SaveAs(outfile_pdf.c_str());
+		//loop HV
+		float HVmin = 6000;
+                float HVmax = 7400;
+		for(int j=0; j<count; j++){
 
-  TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
-  effout->cd();
-  efficiency->Write("Efficiency");
-  effout->Close();  
+std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at(" << j << "): " << eff_out.at(j) << "; HV: " << HVs.at(j)*1000 << std::endl;
+
+
+			float eff_new = (eff_on.at(j)-eff_out.at(j))/(1.-eff_out.at(j));
+			efficiency->SetPoint(j,(HVs.at(j)*1000),eff_new);
+			efficiency->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
+
+                        efficiency_temp->SetPoint(j,(HVs.at(j)*1000),eff_new);
+                        efficiency_temp->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
+
+			if(j==0) HVmin = HVs.at(j)*1000;
+                        if(j==(count-1)) HVmax = HVs.at(j)*1000;
+
+		}
+
+
+
+		TF1* sigmoid = new TF1("sigmoid","(1-sqrt((1-[0])*(1-[0])))/(1+exp([1]*([2]-x)))",6000,7400);
+		sigmoid->SetParName(0,"#epsilon_{max}");
+		sigmoid->SetParName(1,"#lambda");
+		sigmoid->SetParName(2,"HV_{50%}");
+		sigmoid->SetParameter(0,0.98);
+		sigmoid->SetParameter(1,0.01);
+		sigmoid->SetParameter(2,7000);
+		efficiency->Fit(sigmoid);
+		efficiency->SetMarkerStyle(22);
+		efficiency->SetMarkerSize(2);
+
+		string sTitle = "; HVeff; Eff";
+		TH1D* Plotter = new TH1D("Plotter", sTitle.c_str(), 1, HVmin-100,HVmax+100);
+		Plotter->SetStats(0);
+		Plotter->SetMinimum(0.);
+		Plotter->SetMaximum(1.08);
+		Plotter->Draw();
+		efficiency->Draw("P");
+		double p1 = sigmoid->GetParameter(0);
+		p1 = 1-sqrt((1-p1)*(1-p1));
+		double p2 = sigmoid->GetParameter(1);
+		double p3 = sigmoid->GetParameter(2);
+		double uLimit = HVmax, lLimit = HVmin;
+		TLatex* ltx = new TLatex();
+		ltx->SetTextSize(0.04);
+		double knee = p3 - log(1/0.95-1)/p2;
+		double WP = knee+120;
+		TLine* lWP = new TLine(WP, 0., WP, 1);
+		lWP->SetLineStyle(2);
+		lWP->Draw("SAME");
+		double shift = 0.5;
+		double add = (uLimit-lLimit)/11., up = 0.3; 
+		ltx->DrawLatex(HVmin, 0.48, Form("Eff(WP) = %.2f", sigmoid->Eval(WP)));
+		ltx->DrawLatex(HVmin, 0.41, Form("WP = %.0f V", WP));
+		ltx->DrawLatex(HVmin, 0.34, Form("knee = %.0f V", knee));
+		ltx->DrawLatex(HVmin, 0.27, Form("HV 50% = %.0f V", p3));
+		TLine* plateau = new TLine(lLimit-50, p1, uLimit+50, p1);
+		plateau->SetLineStyle(2);
+		plateau->Draw();
+		add = (uLimit-lLimit)/11.;
+		if ((knee - lLimit) < (uLimit-lLimit)*(3/11.)) add = knee + add;
+		else add = lLimit+add;
+		ltx->DrawLatex(add, p1+0.02, Form("plateau = %.2f", p1));
+		string outfile = "Efficiency";
+		string outfile_png = Form("../ScanId_%d/Efficiency_SN%d_%s.png", sn, sn, wp.at(i));
+		string outfile_pdf = Form("../ScanId_%d/Efficiency_SN%d_%s.pdf", sn, sn, wp.at(i));
+		string outfile_root =Form("../ScanId_%d/Efficiency_SN%d_%s.root", sn, sn ,wp.at(i));
+		gPad->SaveAs(outfile_png.c_str());
+		gPad->SaveAs(outfile_pdf.c_str());
+		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
+		effout->cd();
+		efficiency->Write("Efficiency");
+		effout->Close();  
+
+
+	}
 
 }
 
