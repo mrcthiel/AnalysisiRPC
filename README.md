@@ -49,7 +49,7 @@ Let's say you want to check dqm plots HV point 1 , Scan ID 508 and with 1000 Max
 ```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
 source init.sh
-root -l 'dqm_beamdump.C(1,508,1000,"/data/gifOctober/roottrees/")'
+root -l 'dqm_beamdump.C(1,508,"/data/gifOctober/roottrees/")'
 ```
 ### How do I run analysis code ? 
 
@@ -58,26 +58,16 @@ Let's say you want to analyse HV point 5 , Scan ID 508 and with 5000 Max Trigger
 ```
 cd /home/acqcmsmu/FEB_DAQ/Analysis/AnalysisiRPC/
 source init.sh
-root -l 'run_ana_FEBv2.C(5,508,5000,"/data/gifOctober/roottrees/")'
+root -l 'run_ana_FEBv2.C(5,508,"/data/gifOctober/roottrees/")'
 ```
 
 ### How do I obtain efficiency curves ? 
-Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs directory.  
-The script called dreff.py is taking Scan ID and working point arguments to read these files correctly plus the directory for on/out muon window and the HV points (from google sheets).  
-You need to provide as a first argument the Scan ID, second the working point, third the directory for on/out muon window  and all HV points.  
-Working point can be Loose, Medium, Tight. 
+Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs directory. Once ou have all txt files (for all HVs) 
+You need to provide as a first argument the Scan ID, second the numbers of HVs, and third the list of all HVs values separated by comma, do not forget that this numbers are float, then put a dot after the interger. 
  
-For example, for ScanId 508, on muon window, and Medium working point:
+For example, for ScanId 508:
 ```
-python dreff.py 508 Medium on_muon_window 6 6.5 6.9 7 7.1 7.2 7.5
-```
-Run again for out muon window:
-```
-python dreff.py 508 Medium out_muon_window 6 6.5 6.9 7 7.1 7.2 7.5
-```
-And finally, the macro that produces the S curve:
-```
-root -l -b -q 'eff_curve.C(508,"Medium")'
+root -l -b -q 'eff_curve.C(508,7,6.,6.5,6.9,7.,7.1,7.2,7.5)'
 ```
 
 
