@@ -9,12 +9,16 @@ using namespace std;
 
 struct stripTimes
 {
-	void addLRframe(int i , float time) {LRframe.push_back(i); LRtime.push_back(time) ; LRframeOK.push_back(true); LRframeBkg.push_back(false);}
-	void addHRframe(int i, float time) {HRframe.push_back(i); HRtime.push_back(time) ; HRframeOK.push_back(true); HRframeBkg.push_back(false);}
+	void addLRframe(int i , float time, int f,  int p) {LRframe.push_back(i); LRtime.push_back(time) ; LRframeOK.push_back(true); LRframeBkg.push_back(false); LRfpga_num.push_back(f); LRpetiroc_num.push_back(p);}
+	void addHRframe(int i, float time, int f, int p) {HRframe.push_back(i); HRtime.push_back(time) ; HRframeOK.push_back(true); HRframeBkg.push_back(false); HRfpga_num.push_back(f);  HRpetiroc_num.push_back(p);}
 	std::vector<int> LRframe;
 	std::vector<float> LRtime;
 	std::vector<bool> LRframeOK;
 	std::vector<int> HRframe;
+	std::vector<int> LRfpga_num;
+	std::vector<int> HRfpga_num;
+	std::vector<int> LRpetiroc_num;
+	std::vector<int> HRpetiroc_num;
 	std::vector<float> HRtime;
 	std::vector<bool> HRframeOK;
 	std::vector<bool> HRframeBkg;
@@ -60,16 +64,22 @@ void ana_FEBv2::Loop()
 	std::cout << corr_LR[0] << " " << corr_HR[0] << std::endl;
 	//std::cout << "Muon Window:" << muW1_ << " " << muW2_ << std::endl;
 	//std::cout << "Bkg Window:" << muW1_-4000-(9*(abs(muW1_)-abs(muW2_))) << " " << muW2_-4000 << std::endl;
-	double time_corr[3] = {12.39 ,12.24,12.5 };
-	//double time_corr[3] = {0 ,0,0 };
+	//double time_corr[3] = {12.39 ,12.24,12.5 };
+	double time_corr[3] = {0 ,0,0 };
 	double time_min = 4000;
 	double time_max = 87000;
 
 
+	//double time_corr_fine[3][32] = {
+	//{0.00, -0.37, 1.06, 5.59, 0.59, 3.83, 0.15, 2.84, 2.19, 0.95, 2.52, 3.89, 9.14, 2.62, 4.05, 7.11, 3.48, 8.20, 7.89, 2.97, 7.50, 4.08, 4.79, 3.10, 4.83, 2.84, 8.87, 7.16, -0.01, 1.85, 3.49, 0.57},
+	//{0.00, -0.47, 1.11, 5.64, 0.57, 3.80, 0.13, 2.86, 2.23, 0.82, 2.61, 4.06, 9.23, 2.59, 4.10, 7.06, 3.32, 8.13, 8.62, 2.60, 7.67, 3.87, 4.64, 3.05, 4.64, 2.58, 8.72, 7.11, -0.15, 1.62, 3.45, 0.49},
+	//{0.00, -0.53, 1.22, 5.74, 0.67, 4.06, 0.19, 2.88, 2.30, 1.08, 2.63, 4.15, 9.32, 2.78, 4.32, 7.33, 3.81, 8.44, 8.03, 3.14, 7.87, 4.32, 5.20, 3.42, 4.99, 3.03, 9.22, 7.59, 0.19, 2.05, 3.76, 0.91}
+	//};
+
 	double time_corr_fine[3][32] = {
-		{0.00, -0.37, 1.06, 5.59, 0.59, 3.83, 0.15, 2.84, 2.19, 0.95, 2.52, 3.89, 9.14, 2.62, 4.05, 7.11, 3.48, 8.20, 7.89, 2.97, 7.50, 4.08, 4.79, 3.10, 4.83, 2.84, 8.87, 7.16, -0.01, 1.85, 3.49, 0.57},
-		{0.00, -0.47, 1.11, 5.64, 0.57, 3.80, 0.13, 2.86, 2.23, 0.82, 2.61, 4.06, 9.23, 2.59, 4.10, 7.06, 3.32, 8.13, 8.62, 2.60, 7.67, 3.87, 4.64, 3.05, 4.64, 2.58, 8.72, 7.11, -0.15, 1.62, 3.45, 0.49},
-		{0.00, -0.53, 1.22, 5.74, 0.67, 4.06, 0.19, 2.88, 2.30, 1.08, 2.63, 4.15, 9.32, 2.78, 4.32, 7.33, 3.81, 8.44, 8.03, 3.14, 7.87, 4.32, 5.20, 3.42, 4.99, 3.03, 9.22, 7.59, 0.19, 2.05, 3.76, 0.91}
+		{15.3147,13.3131,13.2824,15.2839,14.2824,15.3131,12.3131,15.3131,11.3131,14.3131,15.3131,16.3131,19.074,15.3131,17.3131,19.3131,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19,-1148.19},
+		{15.3131,13.3131,13.3131,16.2528,14.3131,15.3131,12.3131,15.3131,11.3131,14.3131,15.3131,16.3131,19.3131,15.3131,18.3127,19.3131,17.3129,18.3131,18.3131,15.3131,18.3131,17.4229,17.303,16.3131,17.3131,17.3131,21.3131,19.3131,17.3131,16.3131,15.3131,15.3131},
+		{15.3131,13.3131,13.3131,15.3131,14.3131,15.3131,12.3131,15.3131,11.3838,14.3131,15.3131,16.3131,18.3131,15.3131,16.324,19.0838,16.3131,18.3131,18.3131,15.3131,17.3132,17.3131,16.3131,16.3131,17.3105,17.3131,20.3089,18.3093,17.3089,15.3092,14.9573,15.3093}
 	};
 
 	uint64_t nentries;
@@ -120,6 +130,9 @@ void ana_FEBv2::Loop()
 	float eff_medium = 0;
 	int n_paired_srip = 0;
 
+	// The timing of the first hit in the muon window. Considered as original hit
+	int first_hit[6];
+	float first_hit_time[6];
 
 	TH1F* hLR = new TH1F("hLR", "LR", 50, 0.0, 50);
 	TH1F* hHR = new TH1F("hHR", "HR", 50, 0.0, 50);
@@ -130,6 +143,7 @@ void ana_FEBv2::Loop()
 	TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,600, -30, 30);
 	TH1F* hdeltaT_1D = new TH1F("deltaT", "T (HR - LR)", 600, -30, 30);
 	TH2F* hsumT = new TH2F("sumT", "T (HR + LR)", 50,0,50,200, 0, 200);
+	TH1F* hHRT_Xtalk = new TH1F("hHRT_Xtalk", "Time diff at HR for Xtalk", 35, -25.0, 10);
 //	TH2F* hHRT = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_-muW2_), muW1_, muW2_);
 //	TH2F* hLRT = new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_-muW2_), muW1_, muW2_);
 	TH1F* hLRT_ = new TH1F("hLRT_","T (LR - Trig)" ,10000,-9000,1000);
@@ -143,9 +157,9 @@ void ana_FEBv2::Loop()
 	TH1F* hLRT_3 = new TH1F("hLRT_3","n strip LR (LR - HR > 3 ns)" ,20,0,20);
 	TH1F* hHRT_3 = new TH1F("hHRT_3","n strip HR (LR - HR > 3 ns)" ,20,0,20);
 	TH1F* hnPairs = new TH1F("hnPairs","n paired strips" ,20,0,20);
-	s.Form("plots_904/events/_HV_%d_SN_%d_MaxTrig_%d_.root",hv_,sn_,mt_);
+	//s.Form("plots_904/events/_HV_%d_SN_%d_MaxTrig_%d_.root",hv_,sn_,mt_);
 
-	TFile *outputFile = new TFile(s,"RECREATE");
+	//TFile *outputFile = new TFile(s,"RECREATE");
 	///Get Final bc0 to calculate overall noise
 	fChain->Draw("bc0>>histbc0");
 	TH1F *hbc0 = (TH1F*)gDirectory->Get("histbc0");
@@ -165,8 +179,8 @@ void ana_FEBv2::Loop()
 	std::cout<<"The data taking time is : "<< run_duration_in_sec <<std::endl;
 	//fChain->Draw("(1)>>histTrigger","(m_channel(frame)==33)");
 	//TH1F *histTrig = (TH1F*)gDirectory->Get("histTrigger");
-	TH2F *hHREvt[100]; //For histograms for each event
-	TH2F *hLREvt[100];
+	//TH2F *hHREvt[100]; //For histograms for each event
+	//TH2F *hLREvt[100];
 /*	for (uint32_t i=0;i<100;i++) {
 		hHREvt[i] = new TH2F(s, "T (return - Trig)", 50,0,50,abs(muW1_-muW2_),muW1_,muW2_);
 		hLREvt[i] = new TH2F(s, "T (direct - Trig)", 50,0,50,abs(muW1_-muW2_),muW1_,muW2_);
@@ -203,10 +217,10 @@ void ana_FEBv2::Loop()
 			else {
 				any_strip_fired = 1; // In this event there is at least one stripped fired. Without any requirement.
 				if (c_side(m_channel(frame[i])) > 0.5){
-					allStrips_temp[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
+					allStrips_temp[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]),m_fpga(frame[i]),int((c_petiroc(m_channel(frame[i]))/16)) );
 				}
 				if (c_side(m_channel(frame[i])) < 0.5){
-					allStrips_temp[m_strip(frame[i])].addHRframe(i, m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
+					allStrips_temp[m_strip(frame[i])].addHRframe(i, m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]),m_fpga(frame[i]),int((c_petiroc(m_channel(frame[i]))/16)));
 				}
 			}
 		} // end of first frame loop
@@ -245,10 +259,10 @@ void ana_FEBv2::Loop()
         TH2F* hHRT = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
         TH2F* hLRT = new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_LR-muW2_LR), muW1_LR, muW2_LR);
         run_duration_in_sec = 10*(abs(muW1_HR)-abs(muW2_HR))*pow(10,-9);
-        for (uint32_t i=0;i<100;i++) {
-                hHREvt[i] = new TH2F(s, "T (return - Trig)", 50,0,50,abs(muW1_HR-muW2_HR),muW1_HR,muW2_HR);
-                hLREvt[i] = new TH2F(s, "T (direct - Trig)", 50,0,50,abs(muW1_LR-muW2_LR),muW1_LR,muW2_LR);
-        }
+        //for (uint32_t i=0;i<100;i++) {
+        //        hHREvt[i] = new TH2F(s, "T (return - Trig)", 50,0,50,abs(muW1_HR-muW2_HR),muW1_HR,muW2_HR);
+        //        hLREvt[i] = new TH2F(s, "T (direct - Trig)", 50,0,50,abs(muW1_LR-muW2_LR),muW1_LR,muW2_LR);
+        //}
 
 
 	for (int jj=0;jj<2;jj++){
@@ -265,6 +279,8 @@ void ana_FEBv2::Loop()
 	nANDstrip_medium_fired=0;
 	nANDstrip_tight_fired=0;
 
+      
+	
 	for (Long64_t jentry=0; jentry<nentries;jentry++) {
 		Long64_t ientry = LoadTree(jentry);
 		if (ientry < 0) break;
@@ -304,6 +320,8 @@ void ana_FEBv2::Loop()
 		medium_num=0;
 		tight_num=0;
 
+		std::fill_n(first_hit, 6, -1);
+		std::fill_n(first_hit_time, 6, 9999999);
 
 
 		for (uint32_t i=0;i<nframe;i++)
@@ -325,12 +343,12 @@ void ana_FEBv2::Loop()
 				any_strip_fired = 1; // In this event there is at least one stripped fired. Without any requirement.
 				if (c_side(m_channel(frame[i])) > 0.5){
 					//LR stips
-					allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
+					allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]),m_fpga(frame[i]), int((c_petiroc(m_channel(frame[i]))/16)) );
 					if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
 				}
 				if (c_side(m_channel(frame[i])) < 0.5){
 					//HR strips
-					allStrips[m_strip(frame[i])].addHRframe(i, m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]));
+					allStrips[m_strip(frame[i])].addHRframe(i, m_time(m_traw(frame[i]))-(time_corr[m_fpga(frame[i])]+time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]),m_fpga(frame[i]),int((c_petiroc(m_channel(frame[i]))/16)) );
 					if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For noise
 				}
 			}
@@ -365,7 +383,17 @@ void ana_FEBv2::Loop()
 						if(jj==0) hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
 					}
 				}
-				if (allStrips[i].HRframeOK[fhr]) ntriggerHR_signal++;
+				if (allStrips[i].HRframeOK[fhr]) {
+				  ntriggerHR_signal++;
+				  int asic = allStrips[i].HRfpga_num[fhr]*2+allStrips[i].HRpetiroc_num[fhr];
+				  double time_corr = allStrips[i].HRtime[fhr];
+
+				  if (first_hit_time[asic] > time_corr ){
+				    first_hit_time[asic] = time_corr;
+				    first_hit[asic] = m_channel(frame[allStrips[i].HRframe[fhr]]);
+				    cout << first_hit_time[asic] << " asic " << asic << " hit " << first_hit[asic] << endl;
+				  }
+				}
 
 			}
 			for (uint32_t flr=0; flr<allStrips[i].LRframe.size(); flr++) { // frame LR loop
@@ -390,9 +418,25 @@ void ana_FEBv2::Loop()
 			{
 				has_paired_strips = 1; //In the event there is at least 1 paired strip
 				n_paired_srip++;
+				
+				
 			}
 			for (uint32_t d=0; d<allStrips[i].deltas.size(); d++)
 			{
+
+			  int asic = m_fpga(frame[allStrips[i].deltas[d].first]) + m_channel(frame[allStrips[i].deltas[d].first])/16;
+			  cout << "fpga is " << m_fpga(frame[allStrips[i].deltas[d].first]) << "asic is" << asic << " channel is "<<  m_channel(frame[allStrips[i].deltas[d].first]) << endl;
+			  cout << "asic lowest time " << first_hit_time[asic] << endl;
+
+
+			  double hr_hit_time_corr = m_time(m_traw(frame[allStrips[i].deltas[d].first]))
+			    +time_corr_fine[m_fpga(frame[allStrips[i].deltas[d].first])][m_channel(frame[allStrips[i].deltas[d].first])];
+			
+			  
+			  if (first_hit_time[asic]< 999999) hHRT_Xtalk->Fill(first_hit_time[asic]-hr_hit_time_corr);
+
+
+			  
 				deltaT=(
 						(
 						 m_time(m_traw(frame[allStrips[i].deltas[d].first]))
@@ -441,7 +485,6 @@ void ana_FEBv2::Loop()
         myfile<<"===================================="<<"\n";
 	}
 
-        outputFile->Close();
         myfile.close();
 
 	gStyle->SetOptStat(0);
@@ -481,11 +524,7 @@ void ana_FEBv2::Loop()
 	newpad1->Draw(); newpad2->Draw();
 	newpad1->cd();
 	newpad1->SetGrid();
-	newpad1->SetLogy();
-	hLRn->Scale(1./ntrig_allevent);
-	hLRn->Draw("Hist");
-	hLRn->GetYaxis()->SetTitle("Noise Hz/cm");
-	hLRn->GetXaxis()->SetTitle("Strips");
+	hHRT_Xtalk->Draw();
 	newpad2->cd();
 	newpad2->SetGrid();
 	//newpad2->SetLogy();

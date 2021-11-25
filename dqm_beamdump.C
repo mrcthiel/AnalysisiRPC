@@ -79,7 +79,7 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt, const char * loc) {
 	pad3->SetGrid();
 	pad3->SetLogz();
 	TH2F *hist3= new TH2F("hist3", "direct strip time",91000,0,91000,50,0,50);
-	ch.Draw("m_strip(frame):m_time(m_traw(frame))>>hist3","(m_channel(frame)<32)&&(c_side(m_channel(frame)))<0.5");
+	ch.Draw("m_time(m_traw(frame)):m_strip(frame)>>hist3(48, -0.5, 47.5,76,329.9,345.1)","(m_channel(frame)<32)&&(c_side(m_channel(frame)))<0.5");
 	hist3->SetLineColor(4);
 	hist3->SetLineWidth(2);
 	hist3->GetXaxis()->SetTitle("time stamp");
@@ -89,6 +89,28 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt, const char * loc) {
 	hist3->SetLabelSize(0.02,"x");
 	hist3->SetTitle("");
 	hist3->Draw("COLZ");
+
+	ofstream myfile;
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeDirectvsStrip.txt",hv,sn,mt);
+	myfile.open (s.Data());
+  
+	Int_t n = hist3->GetNbinsX();
+	Int_t p = hist3->GetNbinsY();
+	for (Int_t i=1; i<=n; i++) {
+	  for (Int_t j=1; j<=p; j++) {
+	    myfile << 
+	      hist3->GetXaxis()->GetBinLowEdge(i)+hist3->GetXaxis()->GetBinWidth(i)/2 << " " <<
+	      hist3->GetYaxis()->GetBinLowEdge(j)+hist3->GetYaxis()->GetBinWidth(j)/2 << " " <<
+	      hist3->GetBinContent(i,j) << "\n";
+	  }
+	}
+
+	myfile.close();
+
+
+	
+
+	
 	c3->cd();
 	c3->Update();
 	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeDirectvsStrip.root",hv,sn,mt);
@@ -135,7 +157,7 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt, const char * loc) {
 	//pad5->SetLogz();
 	pad5->SetRightMargin(0.12);
 	TH2F *hist5= new TH2F("hist5", "Return strip time",180000,-90000,90000,50,0,50);
-	ch.Draw("m_strip(frame):m_time(m_traw(frame))>>hist5","(m_channel(frame)<32)&&(c_side(m_channel(frame))>0.1)");
+	ch.Draw("m_time(m_traw(frame)):m_strip(frame)>>hist5(48, -0.5, 47.5,76,329.9,345.1)","(m_channel(frame)<32)&&(c_side(m_channel(frame))>0.1)");
 	hist5->SetLineColor(4);
 	hist5->SetLineWidth(2);
 	hist5->GetXaxis()->SetTitle("time [ns]");
@@ -145,13 +167,36 @@ void dqm_beamdump(Int_t hv, Int_t sn , Int_t mt, const char * loc) {
 	hist5->SetLabelSize(0.02,"x");
 	hist5->SetTitle("");
 	hist5->Draw("COLZ");
+
+
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrip.txt",hv,sn,mt);
+	myfile.open (s.Data());
+  
+	n = hist5->GetNbinsX();
+	p = hist5->GetNbinsY();
+
+	for (Int_t i=1; i<=n; i++) {
+	  for (Int_t j=1; j<=p; j++) {
+	    myfile << 
+	      hist5->GetXaxis()->GetBinLowEdge(i)+hist5->GetXaxis()->GetBinWidth(i)/2 << " " <<
+	      hist5->GetYaxis()->GetBinLowEdge(j)+hist5->GetXaxis()->GetBinWidth(j)/2 << " " <<
+	      hist5->GetBinContent(i,j) << "\n";
+	  }
+	}
+
+	myfile.close();
+
+
+	
+
+	
 	c5->cd();
    	c5->Update();
-	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips.root",hv,sn,mt);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timevsReturnvsStrips.root",hv,sn,mt);
 	c5->SaveAs(s);
-	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips.pdf",hv,sn,mt);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timevsReturnvsStrips.pdf",hv,sn,mt);
 	c5->SaveAs(s);
-	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timeReturnvsStrips_forwebDCS.png",hv,sn,mt);
+	s.Form("plots_gif/DQM_plots/_HV_%d_SN_%d_MaxTrig_%d__2D_timevsReturnvsStrips_forwebDCS.png",hv,sn,mt);
 	c5->SaveAs(s);
 
 	//stip hits
