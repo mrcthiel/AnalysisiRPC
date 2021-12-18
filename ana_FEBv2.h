@@ -41,7 +41,7 @@ public :
    TBranch        *b_nframe;   //!
    TBranch        *b_frame;   //!
 
-   ana_FEBv2(Int_t hv, Int_t sn , /*Int_t mt, Int_t muW1, Int_t muW2 ,*/ const char * loc , TTree *tree=0);
+   ana_FEBv2(Int_t hv, Int_t sn , /*Int_t mt, Int_t muW1, Int_t muW2 ,*/ const char * loc, TTree *tree=0);
    virtual ~ana_FEBv2();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -50,17 +50,20 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+
+
 };
 
 #endif
 
 #ifdef ana_FEBv2_cxx
-ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , /*Int_t mt, Int_t muW1, Int_t muW2,*/ const char * loc , TTree *tree) : fChain(0) 
+ana_FEBv2::ana_FEBv2(Int_t hv, Int_t sn , /*Int_t mt, Int_t muW1, Int_t muW2,*/ const char * loc, TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    hv_ = hv;
    sn_ = sn;
+
  //  mt_ = mt;
  //  muW1_ = muW1;
  //  muW2_ = muW2;
