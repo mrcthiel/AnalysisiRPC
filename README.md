@@ -61,6 +61,8 @@ source init.sh
 root -l 'run_ana_FEBv2.C(5,508,"/data/gifOctober/roottrees/")'
 ```
 
+Before to run a Sacan ID check if this scan is included in the CalibAlig.h file, as well as, the time calibration.
+
 ### How do I obtain efficiency curves ? 
 Everytime, you run the 'run_ana_FEBv2.C' you will obtain a txt file in outputs directory. Once ou have all txt files (for all HVs) 
 You need to provide as a first argument the Scan ID, second the numbers of HVs, and third the list of all HVs values separated by comma, do not forget that this numbers are float, then put a dot after the interger. 
