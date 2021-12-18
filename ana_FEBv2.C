@@ -238,16 +238,25 @@ void ana_FEBv2::Loop()
 	hHRT_temp->GetXaxis()->SetRangeUser(hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())-50,hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())+50);
 	hLRT_temp->GetXaxis()->SetRangeUser(hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())-50,hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())+50);
 
-	hHRT_temp->Fit("gaus");
-	hLRT_temp->Fit("gaus");
 
-	double muW1_HR = hHRT_temp->GetFunction("gaus")->GetParameter(1)-20.;
-	double muW2_HR = hHRT_temp->GetFunction("gaus")->GetParameter(1)+20.;
-	double muW1_LR = hLRT_temp->GetFunction("gaus")->GetParameter(1)-20.;
-	double muW2_LR = hLRT_temp->GetFunction("gaus")->GetParameter(1)+20.;
+        double muW1_HR =-20.;
+        double muW2_HR =+20.;
+        double muW1_LR =-20.;
+        double muW2_LR =+20.;
+        double muW1_bkg =-20.;
+        double muW2_bkg =+20.;
 
-	double muW1_bkg = hHRT_temp->GetFunction("gaus")->GetParameter(1)-20.-1000.;
-	double muW2_bkg = hHRT_temp->GetFunction("gaus")->GetParameter(1)+20.-1000.;
+        if(!(hHRT_temp->Integral()==0 || hLRT_temp->Integral()==0)){
+                hHRT_temp->Fit("gaus");
+                hLRT_temp->Fit("gaus");
+                muW1_HR = hHRT_temp->GetFunction("gaus")->GetParameter(1)-20.;
+                muW2_HR = hHRT_temp->GetFunction("gaus")->GetParameter(1)+20.;
+                muW1_LR = hLRT_temp->GetFunction("gaus")->GetParameter(1)-20.;
+                muW2_LR = hLRT_temp->GetFunction("gaus")->GetParameter(1)+20.;
+                muW1_bkg = hHRT_temp->GetFunction("gaus")->GetParameter(1)-20.-1000.;
+                muW2_bkg = hHRT_temp->GetFunction("gaus")->GetParameter(1)+20.-1000.;
+        }
+
 
 
 	TH2F* hHRT = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
