@@ -11,11 +11,13 @@ void eff_curve(int sn, int count, ...){
 	wp.push_back("tight");
 	wp.push_back("hr");
 	wp.push_back("lr");
+        wp.push_back("cluster");
+        wp.push_back("cluster2");
 
 
 
 	std::vector<double> HVs;
-	std::vector<float> effnocut_on, effloose_on, effmedium_on, efftight_on, effhr_on, efflr_on, effnocut_out, effloose_out, effmedium_out, efftight_out, effhr_out, efflr_out;
+	std::vector<float> effnocut_on, effloose_on, effmedium_on, efftight_on, effhr_on, efflr_on, effnocut_out, effloose_out, effmedium_out, efftight_out, effhr_out, efflr_out, effcluster_on, effcluster_out, effcluster2_on, effcluster2_out;
 	HVs.clear();
 	effnocut_on.clear();
 	effloose_on.clear();
@@ -29,6 +31,10 @@ void eff_curve(int sn, int count, ...){
 	efftight_out.clear();
 	effhr_out.clear();
 	efflr_out.clear();
+        effcluster_on.clear();
+        effcluster_out.clear();
+        effcluster2_on.clear();
+        effcluster2_out.clear();
 
 	va_list list;
 	va_start(list, count);
@@ -44,8 +50,10 @@ void eff_curve(int sn, int count, ...){
 		fileName = Form("outputs/_HV_%d_SN_%d_MaxTrig_.txt", (j+1), sn);
 		FILE *fp = fopen(fileName.c_str(),"r");
 		Int_t ncols;
-		float effnocuton, efflooseon, effmediumon, efftighton, effhron, efflron;
-		float effnocutout, efflooseout, effmediumout, efftightout, effhrout, efflrout;
+		float effnocuton, efflooseon, effmediumon, efftighton, effhron, efflron, effclusteron, effcluster2on;
+		float effnocutout, efflooseout, effmediumout, efftightout, effhrout, efflrout, effclusterout, effcluster2out;
+		float temp;
+
 		ncols=0;
 		ncols=fscanf(fp,"%f", &effnocuton);
 		effnocut_on.push_back(effnocuton);
@@ -64,26 +72,42 @@ void eff_curve(int sn, int count, ...){
 		ncols=5;
 		ncols=fscanf(fp,"%f", &efflron);
 		efflr_on.push_back(efflron);
-		ncols=6;
-		ncols=fscanf(fp, "%*[^\n]\n");
-		ncols=7;
+                ncols=6;
+                ncols=fscanf(fp,"%f", &effclusteron);
+                effcluster_on.push_back(effclusteron);
+                ncols=7;
+                ncols=fscanf(fp,"%f", &effcluster2on);
+                effcluster2_on.push_back(effcluster2on);
+		ncols=8;
+		ncols=fscanf(fp, "%f", &temp);
+                ncols=9;
+                ncols=fscanf(fp, "%f", &temp);
+                ncols=10;
+                ncols=fscanf(fp, "%*[^\n]\n");
+                ncols=11;
 		ncols=fscanf(fp,"%f", &effnocutout);
 		effnocut_out.push_back(effnocutout);
-		ncols=8;
+		ncols=12;
 		ncols=fscanf(fp,"%f", &efflooseout);
 		effloose_out.push_back(efflooseout);
-		ncols=9;
+		ncols=13;
 		ncols=fscanf(fp,"%f", &effmediumout);
 		effmedium_out.push_back(effmediumout);
-		ncols=10;
+		ncols=14;
 		ncols=fscanf(fp,"%f", &efftightout);
 		efftight_out.push_back(efftightout);
-		ncols=11;
+		ncols=15;
 		ncols=fscanf(fp,"%f", &effhrout);
 		effhr_out.push_back(effhrout);
-		ncols=12;
+		ncols=16;
 		ncols=fscanf(fp,"%f", &efflrout);
 		efflr_out.push_back(efflrout);
+                ncols=17;
+                ncols=fscanf(fp,"%f", &effclusterout);
+                effcluster_out.push_back(effclusterout);
+                ncols=18;
+                ncols=fscanf(fp,"%f", &effcluster2out);
+                effcluster2_out.push_back(effcluster2out);
 		//fp->fclose();
 		fclose(fp);
 	}
@@ -100,6 +124,8 @@ void eff_curve(int sn, int count, ...){
 		if(i==3){eff_on=efftight_on; eff_out=efftight_out;}
 		if(i==4){eff_on=effhr_on; eff_out=effhr_out;}
 		if(i==5){eff_on=efflr_on; eff_out=efflr_out;}
+                if(i==6){eff_on=effcluster_on; eff_out=effcluster_out;}
+                if(i==7){eff_on=effcluster2_on; eff_out=effcluster2_out;}
 
 		TGraphErrors* efficiency = new TGraphErrors();
                 TGraphErrors* efficiency_temp = new TGraphErrors();
@@ -136,7 +162,6 @@ std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at("
 		efficiency->Fit(sigmoid);
 		efficiency->SetMarkerStyle(22);
 		efficiency->SetMarkerSize(2);
-
 		string sTitle = "; HVeff; Eff";
 		TH1D* Plotter = new TH1D("Plotter", sTitle.c_str(), 1, HVmin-100,HVmax+100);
 		Plotter->SetStats(0);
@@ -170,9 +195,9 @@ std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at("
 		else add = lLimit+add;
 		ltx->DrawLatex(add, p1+0.02, Form("plateau = %.2f", p1));
 		string outfile = "Efficiency";
-		string outfile_png = Form("../ScanId_%d/Efficiency_SN%d_%s.png", sn, sn, wp.at(i));
-		string outfile_pdf = Form("../ScanId_%d/Efficiency_SN%d_%s.pdf", sn, sn, wp.at(i));
-		string outfile_root =Form("../ScanId_%d/Efficiency_SN%d_%s.root", sn, sn ,wp.at(i));
+		string outfile_png = Form("ScanId_%d/Efficiency_SN%d_%s.png", sn, sn, wp.at(i));
+		string outfile_pdf = Form("ScanId_%d/Efficiency_SN%d_%s.pdf", sn, sn, wp.at(i));
+		string outfile_root =Form("ScanId_%d/Efficiency_SN%d_%s.root", sn, sn, wp.at(i));
 		gPad->SaveAs(outfile_png.c_str());
 		gPad->SaveAs(outfile_pdf.c_str());
 		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
