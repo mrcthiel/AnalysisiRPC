@@ -27,7 +27,7 @@ vector<int> Feb_Chamber(int sn_){
 	if(sn_==289)  {feb_=5; chamber_=31;}
         if(sn_==644)  {feb_=12; chamber_=31;} //temporary feb number
 	if(sn_==650||sn_==651) {feb_=11; chamber_=31;}
-        if(sn_==293)  {feb_=14; chamber_=31;}
+        if(sn_==293||sn_==295)  {feb_=14; chamber_=31;}
 
 // ADD HERE NEW SACN_ID AND IT FEB AND CHAMBER NUMBERS
 // EXAMPLE:
