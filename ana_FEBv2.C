@@ -15,6 +15,9 @@ using namespace std;
 
 void ana_FEBv2::Loop()
 {
+
+	bool isFEBv2r2 = true;
+
 	if (fChain == 0) return;
 	TString         s("");
 	s.Form("will save plots for RUN: , _HV_%d_SN_%d_MaxTrig_ ",hv_,sn_/*,mt_*/);
@@ -25,6 +28,7 @@ void ana_FEBv2::Loop()
 
 	vector<vector<double>> time_corr_fine_vec;
 	time_corr_fine_vec.clear();
+
 	time_corr_fine_vec =  time_corr_fine_func(sn_);
 
         double time_corr_fine[3][32];
@@ -217,8 +221,11 @@ void ana_FEBv2::Loop()
 
 	auto newtree = fChain->CloneTree();
 
+                cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << endl;
+
         vector<double> mu_wind_vec = MuonWindow(sn_, newtree, /*nframe, frame,*/ time_min, time_max, nentries/*, b_nframe, b_frame*/);
 //	cout << "LR center: " << mu_wind_vec.at(0) << ";  HR center: " <<  mu_wind_vec.at(1) << endl;
+
 
         double muW1_HR = mu_wind_vec.at(1)-20.;
         double muW2_HR = mu_wind_vec.at(1)+20.;
@@ -242,6 +249,7 @@ void ana_FEBv2::Loop()
 
 	double cluster_eff = 1;
 	double cluster2_eff = 1;
+
 
 	for (int jj=0;jj<2;jj++){
 		double sum_cluster_size = 0;
@@ -331,15 +339,31 @@ void ana_FEBv2::Loop()
 			vector<double> time_petiroc;
 			time_petiroc.clear();
                         for (uint32_t i=0;i<nframe;i++){
+				std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i]);
+	                        int strip_side = -9999;
+        	                int strip_numb = -9999;
+                	        if(strip_and_side.size()>0){
+                        	        strip_side = strip_and_side.at(1);
+                                	strip_numb = strip_and_side.at(0);
+                        	}
+
 				bool there_is_HR = true;
 				if(m_channel(frame[i])!=32 && m_channel(frame[i])!=33){
-                                        if (c_side(m_channel(frame[i])) < 0.5){
-
+					if ((!isFEBv2r2 && c_side(m_channel(frame[i]))<0.5) || (isFEBv2r2 && strip_side==0)){
                                                 double calibrated_time = m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])];
-                                                double time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
-                                                double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
-                                                double time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
-                                                double HR_trig = time_in_strip_new + time_to_conector_new;
+                                                double time_in_strip = 0;
+						double time_in_strip_new = 0;
+						double time_to_conector_new = 0;
+						if(isFEBv2r2) {
+							time_in_strip = calibrated_time - trig_time - HR_to_conctor[strip_numb]/V_conector;
+							time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[strip_numb];
+							time_to_conector_new = HR_to_conctor[strip_numb]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+						} else {
+							time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
+                                                	time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
+                                                	time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+						}
+						double HR_trig = time_in_strip_new + time_to_conector_new;
                                                 if ((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ){
 							for(int pr=0;pr<petiroc.size();pr++){
 								if(petiroc.at(pr)==c_petiroc(m_channel(frame[i]))){ 
@@ -358,14 +382,35 @@ void ana_FEBv2::Loop()
 			for(int ii = 0; ii<petiroc.size(); ii++){
 				double time_temp = 9999999999999.;
 	                        for (uint32_t i=0;i<nframe;i++){
+					std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i]);
+		                        int strip_side = -9999;
+                		        int strip_numb = -9999;
+                        		if(strip_and_side.size()>0){
+                                		strip_side = strip_and_side.at(1);
+                                		strip_numb = strip_and_side.at(0);
+                        		}
+
+
                                         if(petiroc.at(ii)==c_petiroc(m_channel(frame[i]))){
 	                                	if(m_channel(frame[i])!=32 && m_channel(frame[i])!=33){
-        	                                	if (c_side(m_channel(frame[i])) < 0.5){
+							if ((!isFEBv2r2 && c_side(m_channel(frame[i]))<0.5) || (isFEBv2r2 && strip_side==0)){
                                                 		double calibrated_time = m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])];
-                                                		double time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
-                                                		double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
-                                                		double time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
-                                                		double HR_trig = time_in_strip_new + time_to_conector_new;
+
+
+								double time_in_strip = 0;
+								double time_in_strip_new = 0;
+								double time_to_conector_new = 0;
+								if(isFEBv2r2) {
+									time_in_strip = calibrated_time - trig_time - HR_to_conctor[strip_numb]/V_conector;
+								        time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[strip_numb];
+								        time_to_conector_new = HR_to_conctor[strip_numb]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+								} else {
+									time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
+				        				time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
+					        			time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+								}
+
+								double HR_trig = time_in_strip_new + time_to_conector_new;
                                                 		if ((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ){
 									if(time_temp>m_time(m_traw(frame[i]))) time_temp = m_time(m_traw(frame[i]));
 								}
@@ -376,8 +421,15 @@ void ana_FEBv2::Loop()
 				time_petiroc.push_back(time_temp);
 			}
 
-			for (uint32_t i=0;i<nframe;i++)
-			{
+			for (uint32_t i=0;i<nframe;i++){
+				std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i]);
+	                        int strip_side = -9999;
+        	                int strip_numb = -9999;
+                	        if(strip_and_side.size()>0){
+                        	        strip_side = strip_and_side.at(1);
+                                	strip_numb = strip_and_side.at(0);
+                        	}
+
 				if (m_channel(frame[i])==32) {
 					t_bc0[m_fpga(frame[i])]=m_time(m_traw(frame[i]));
 				}
@@ -394,21 +446,39 @@ void ana_FEBv2::Loop()
 				*/}
 				else {
 					any_strip_fired = 1; // In this event there is at least one stripped fired. Without any requirement.
-					if (c_side(m_channel(frame[i])) > 0.5){
+					if ((!isFEBv2r2 && c_side(m_channel(frame[i]))>0.5) || (isFEBv2r2 && strip_side==1)){
 						//LR stips
 
 						double calibrated_time = m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])];
-						double time_in_strip = calibrated_time - trig_time - LR_to_conctor[m_strip(frame[i])]/V_conector;
-						double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
-						double time_to_conector_new = LR_to_conctor[m_strip(frame[i])]/V_conector-LR_to_conctor[reference_strip]/V_conector;
+						double time_in_strip = 0;
+						double time_in_strip_new = 0;
+						double time_to_conector_new = 0;
+						if(isFEBv2r2) {
+							time_in_strip = calibrated_time - trig_time - LR_to_conctor[strip_numb]/V_conector;
+						        time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[strip_numb];
+						        time_to_conector_new = LR_to_conctor[strip_numb]/V_conector-LR_to_conctor[reference_strip]/V_conector;
+						} else {
+							time_in_strip = calibrated_time - trig_time - LR_to_conctor[m_strip(frame[i])]/V_conector;
+				        		time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
+					        	time_to_conector_new = LR_to_conctor[m_strip(frame[i])]/V_conector-LR_to_conctor[reference_strip]/V_conector;
+						}
+
+
+
 						double LR_trig = time_in_strip_new + time_to_conector_new;
 						if ((LR_trig) > muW1_LR and (LR_trig) < muW2_LR ){
-							allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
-							if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
+
+							if(isFEBv2r2) {
+								allStrips[strip_numb].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
+                                                        	if(jj==0) hLR->Fill(strip_numb,1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
+							} else {
+								allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
+								if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
+							}
 						}
 
 					}
-					if (c_side(m_channel(frame[i])) < 0.5){
+					if ((!isFEBv2r2 && c_side(m_channel(frame[i]))<0.5) || (isFEBv2r2 && strip_side==0)){
 						//HR strips
 						bool pass = false;
                                                 for(int pr=0;pr<petiroc.size();pr++){
@@ -420,13 +490,28 @@ void ana_FEBv2::Loop()
 						if(!pass) continue;
 
                                                 double calibrated_time = m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])];
-                                                double time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
-                                                double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
-                                                double time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
-                                                double HR_trig = time_in_strip_new + time_to_conector_new;
+						double time_in_strip = 0;
+						double time_in_strip_new = 0;
+						double time_to_conector_new = 0;
+						if(isFEBv2r2) {
+							time_in_strip = calibrated_time - trig_time - HR_to_conctor[strip_numb]/V_conector;
+						        time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[strip_numb];
+						        time_to_conector_new = HR_to_conctor[strip_numb]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+						} else {
+							time_in_strip = calibrated_time - trig_time - HR_to_conctor[m_strip(frame[i])]/V_conector;
+						        time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[m_strip(frame[i])];
+						        time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
+						}
+
+						double HR_trig = time_in_strip_new + time_to_conector_new;
                                                 if ((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ){
-							allStrips[m_strip(frame[i])].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
-							if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For noise
+							if(isFEBv2r2) {
+								allStrips[strip_numb].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
+							        if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
+							} else {
+								allStrips[m_strip(frame[i])].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
+							        if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
+							}
 						}
 					}
 				}
@@ -501,7 +586,8 @@ void ana_FEBv2::Loop()
 							//trig = 2000 and 87000, signal is 1000,         
 						{
 							allStrips[i].HRframeBkg[fhr] = true;
-							if(jj==0) hLRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+							if(jj==0 && !isFEBv2r2) hLRn->Fill(i,1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+                                                        if(jj==0 && isFEBv2r2) hLRn->Fill(i,1/(run_duration_in_sec*120));
 						}
 					}
 					if (allStrips[i].HRframeOK[fhr]){
@@ -543,7 +629,9 @@ void ana_FEBv2::Loop()
                                                 if ( ((LR_trig) > muW1_LR-1000-(9*(abs(muW1_LR)-abs(muW2_LR))) and (LR_trig) < muW2_LR-1000 ))
 						{ 
 							allStrips[i].LRframeBkg[flr] = true;
-							if(jj==0) hHRn->Fill(m_strip(frame[i]),1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+                                                        if(jj==0 && !isFEBv2r2) hHRn->Fill(i,1/(run_duration_in_sec*120)); //For Noise; newly added histogram
+							if(jj==0 && isFEBv2r2) hHRn->Fill(i,1/(run_duration_in_sec*120));
+
 						}   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
 					}
 					if (allStrips[i].LRframeOK[flr]){
@@ -723,7 +811,9 @@ void ana_FEBv2::Loop()
 			//std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
 		} //Event loop ends
 
-		if(jj==0){
+
+
+		if(jj==0 && ClusterE!=0){
                 	for(int ij=0;ij<100;ij++){
 				ClusterS.at(ij) = ClusterS.at(ij)/ClusterE;
                         	ClusterN.at(ij) = ClusterN.at(ij)/ClusterE;
@@ -754,6 +844,7 @@ void ana_FEBv2::Loop()
 		myfile<<""<<"\n";
 
 	}
+
 
 	myfile.close();
 
