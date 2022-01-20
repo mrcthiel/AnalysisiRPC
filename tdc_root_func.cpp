@@ -25,7 +25,7 @@ std::vector<int> m_strip_FEBv2r2(long int m) {
 	std::vector<int> strip_side;
 	strip_side.clear();
 
-	if(fpga==0 && pr_ch==1 && tdc_ch==0){strip_side.push_back(15); strip_side.push_back(0);} 
+	if(fpga==0 && pr_ch==0 && tdc_ch==0){strip_side.push_back(15); strip_side.push_back(0);} 
 	else if(fpga==0 && pr_ch==30 && tdc_ch==31){strip_side.push_back(15); strip_side.push_back(1);}
 	else if(fpga==0 && pr_ch==2  && tdc_ch==1 ){strip_side.push_back(14); strip_side.push_back(0);}
 	else if(fpga==0 && pr_ch==28 && tdc_ch==30){strip_side.push_back(14); strip_side.push_back(1);}
@@ -56,8 +56,8 @@ std::vector<int> m_strip_FEBv2r2(long int m) {
 	else if(fpga==0 && pr_ch==28 && tdc_ch==14){strip_side.push_back(1); strip_side.push_back(0);}
 	else if(fpga==0 && pr_ch==2  && tdc_ch==17){strip_side.push_back(1); strip_side.push_back(1);}
 	else if(fpga==0 && pr_ch==30 && tdc_ch==15){strip_side.push_back(0); strip_side.push_back(0);}
-	else if(fpga==0 && pr_ch==1  && tdc_ch==16){strip_side.push_back(0); strip_side.push_back(1);}
-	else if(fpga==1 && pr_ch==1  && tdc_ch==0 ){strip_side.push_back(31); strip_side.push_back(0);} 
+	else if(fpga==0 && pr_ch==0  && tdc_ch==16){strip_side.push_back(0); strip_side.push_back(1);}
+	else if(fpga==1 && pr_ch==0  && tdc_ch==0 ){strip_side.push_back(31); strip_side.push_back(0);} 
 	else if(fpga==1 && pr_ch==30 && tdc_ch==31){strip_side.push_back(31); strip_side.push_back(1);}
 	else if(fpga==1 && pr_ch==2  && tdc_ch==1 ){strip_side.push_back(30); strip_side.push_back(0);}
 	else if(fpga==1 && pr_ch==28 && tdc_ch==30){strip_side.push_back(30); strip_side.push_back(1);}
@@ -88,8 +88,8 @@ std::vector<int> m_strip_FEBv2r2(long int m) {
 	else if(fpga==1 && pr_ch==28 && tdc_ch==14){strip_side.push_back(17); strip_side.push_back(0);}
 	else if(fpga==1 && pr_ch==2  && tdc_ch==17){strip_side.push_back(17); strip_side.push_back(1);}
 	else if(fpga==1 && pr_ch==30 && tdc_ch==15){strip_side.push_back(16); strip_side.push_back(0);}
-	else if(fpga==1 && pr_ch==1  && tdc_ch==16){strip_side.push_back(16); strip_side.push_back(1);}
-	else if(fpga==2 && pr_ch==1  && tdc_ch==0 ){strip_side.push_back(47); strip_side.push_back(0);} 
+	else if(fpga==1 && pr_ch==0  && tdc_ch==16){strip_side.push_back(16); strip_side.push_back(1);}
+	else if(fpga==2 && pr_ch==0  && tdc_ch==0 ){strip_side.push_back(47); strip_side.push_back(0);} 
 	else if(fpga==2 && pr_ch==30 && tdc_ch==31){strip_side.push_back(47); strip_side.push_back(1);}
 	else if(fpga==2 && pr_ch==2  && tdc_ch==1 ){strip_side.push_back(46); strip_side.push_back(0);}
 	else if(fpga==2 && pr_ch==28 && tdc_ch==30){strip_side.push_back(46); strip_side.push_back(1);}
@@ -120,7 +120,7 @@ std::vector<int> m_strip_FEBv2r2(long int m) {
 	else if(fpga==2 && pr_ch==28 && tdc_ch==14){strip_side.push_back(33); strip_side.push_back(0);}
 	else if(fpga==2 && pr_ch==2  && tdc_ch==17){strip_side.push_back(33); strip_side.push_back(1);}
 	else if(fpga==2 && pr_ch==30 && tdc_ch==15){strip_side.push_back(32); strip_side.push_back(0);}
-	else if(fpga==2 && pr_ch==1  && tdc_ch==16){strip_side.push_back(32); strip_side.push_back(1);}
+	else if(fpga==2 && pr_ch==0  && tdc_ch==16){strip_side.push_back(32); strip_side.push_back(1);}
 
 	return strip_side;
 }
