@@ -379,11 +379,11 @@ void ana_FEBv2::Loop()
                                                 time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
                                          }
                                         double HR_trig = time_in_strip_new + time_to_conector_new;
-					if ((LR_trig) < muW1_LR || (LR_trig) > muW2_LR ){
+					if ((HR_trig) < muW1_HR || (HR_trig) > muW2_HR ){
 						if(isFEBv2r2) {
-			        			if(jj==0) hLR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*1*Strip_length[strip_numb])); //For Noise
+			        			if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*1*Strip_length[strip_numb])); //For Noise
 			        		} else {
-			        			if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*1*Strip_length[m_strip(frame[i])])); //For Noise
+			        			if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*1*Strip_length[m_strip(frame[i])])); //For Noise
 			     	   		}
 					} 
 				}
