@@ -147,7 +147,7 @@ void ana_FEBv2::Loop()
 	TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,300, -30, 30);
 	TH2F* hsumT = new TH2F("sumT", "T (HR + LR)", 50,0,50,100, -2750, -2650);
 	TH1F* hdeltaT_1D = new TH1F("deltaT", "T (HR - LR)", 300, -30, 30);
-	TH1F* hsumT_1D = new TH1F("sumT", "T (HR + LR)", 100, -2750, -2650);
+	TH1F* hsumT_1D = new TH1F("sumT", "T (HR + LR)", 100, -1850, -1750);
 	TH2F* hsumTdeltaT_2D = new TH2F("sumT_vs_deltaT", "sumT vs deltaT; T (HR + LR); T (HR - LR)", 1000, -2750, -2650, 300, -30, 30);
 	TH1F* hLRT_ = new TH1F("hLRT_","T (LR - Trig)" ,10000,-9000,1000);
 	TH1F* hHRT_ = new TH1F("hHRT_","T (HR - Trig)" ,10000,-9000,1000);
@@ -169,7 +169,7 @@ void ana_FEBv2::Loop()
 	TH1F* hnPairs_med = new TH1F("hnPairs_med","n paired strips" ,20,0,20);
 
         TH1F* hdeltaTCluster_1D = new TH1F("hdeltaTCluster_1D", "Cluster T (HR - LR)", 300, -30, 30);
-        TH1F* hsumTCluster_1D = new TH1F("hsumTCluster_1D", "Cluster T (HR + LR)", 100, -2750, -2650);
+        TH1F* hsumTCluster_1D = new TH1F("hsumTCluster_1D", "Cluster T (HR + LR)", 100, -1850, -1750);
         TH1F* hClusterSize = new TH1F("hClusterSize","Cluster Size" ,10,0,10);
         TH1F* hNClusters = new TH1F("hNClusters","Number of Clusters" ,10,0,10);
         TH2F* hdeltaClusterT = new TH2F("hdeltaClusterT", "ClusterT (HR - LR)", 50,0,50,300, -30, 30);
@@ -179,6 +179,14 @@ void ana_FEBv2::Loop()
         TH1F* hClusterSize_2 = new TH1F("hClusterSize_2","Cluster Size" ,10,0,10);
         TH1F* hNClusters_2 = new TH1F("hNClusters_2","Number of Clusters" ,10,0,10);
         TH2F* hdeltaClusterT_2 = new TH2F("hdeltaClusterT_2", "ClusterT (HR - LR)", 50,0,50,300, -30, 30);
+
+        TH1F* strip_diff_h = new TH1F("strip_diff_h", " HR-LR strip cluster difference ", 19, -5, 5);
+
+        TH1F* hHR_check_xtalk = new TH1F("hHR_check_xtalk", "HR signal in next strip", 50, 0.0, 50);
+        TH1F* hLR_check_xtalk = new TH1F("hLR_check_xtalk", "LR signal in next strip", 50, 0.0, 50);
+
+        TH1F* hHR_check_xtalk_temp = new TH1F("hHR_check_temp", "", 50, 0.0, 50);
+        TH1F* hLR_check_xtalk_temp = new TH1F("hLR_check_temp", "", 50, 0.0, 50);
 
 	
 	TGraph *g_cluster_size = new TGraph();
@@ -279,7 +287,8 @@ void ana_FEBv2::Loop()
                 ClusterL.clear();
 		int ClusterE = 0;
 
-
+		int number_of_good_clusters = 0;
+		int number_of_good_clusters_ratio1 = 0;
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
 			Long64_t ientry = LoadTree(jentry);
 			if (ientry < 0) break;
@@ -762,6 +771,7 @@ void ana_FEBv2::Loop()
 					if(jj==0) hdeltaT->Fill(i,deltaT);
 					if(deltaT>0 && jj==0) hsumT->Fill(i,sumT);
 					if(jj==0) hdeltaT_1D->Fill(deltaT);
+					//cout << "strip: " << i << ";  sum time: " << sumT << endl;
 					if(deltaT>0 && jj==0) hsumT_1D->Fill(sumT);
 					if(deltaT>0 && jj==0) hsumTdeltaT_2D->Fill(sumT,deltaT);
 					if (deltaT>0./*=minimum_time_diff[reference_strip]*/) {
@@ -784,11 +794,34 @@ void ana_FEBv2::Loop()
 			bool cluster_good = false;
                         bool cluster_good_2 = false;
 
+			for(int iii=0;iii<strip_HR.size();iii++){
+				if(iii==(strip_HR.size()-1)) continue;
+                                if(iii==0) continue;
+				hHR_check_xtalk_temp->Fill(strip_HR.at(iii));
+				if(((strip_HR.at(iii)-strip_HR.at(iii+1))==-1 && abs(time_HR.at(iii)-time_HR.at(iii+1))<3) && ((strip_HR.at(iii)-strip_HR.at(iii-1))==1 && abs(time_HR.at(iii)-time_HR.at(iii-1))<3)){
+					hHR_check_xtalk->Fill(strip_HR.at(iii));
+
+				}
+			}
+
+                        for(int iii=0;iii<strip_LR.size();iii++){
+                                if(iii==(strip_LR.size()-1)) break;
+                                if(iii==0) continue;
+                                hLR_check_xtalk_temp->Fill(strip_LR.at(iii));
+                                if(((strip_LR.at(iii)-strip_LR.at(iii+1))==-1 && abs(time_LR.at(iii)-time_LR.at(iii+1))<3) && ((strip_LR.at(iii)-strip_LR.at(iii-1))==1 && abs(time_LR.at(iii)-time_LR.at(iii-1))<3)){
+                                        hLR_check_xtalk->Fill(strip_LR.at(iii));
+                                }
+                        }
+
+
 			if(medium_num){
                         	double limit = 0.1;
 				for(int ij=0;ij<100;ij++){
-					vector<std::pair<vector<int>,vector<double>>> cluster_HR = cluster_one_side(strip_HR, time_HR, limit);
-		                	vector<std::pair<vector<int>,vector<double>>> cluster_LR = cluster_one_side(strip_LR, time_LR, limit);
+//					vector<std::pair<vector<int>,vector<double>>> cluster_HR = cluster_one_side(strip_HR, time_HR, limit);
+//		                	vector<std::pair<vector<int>,vector<double>>> cluster_LR = cluster_one_side(strip_LR, time_LR, limit);
+                                        vector<ClusterOneSide> cluster_HR = cluster_one_side(strip_HR, time_HR, limit);
+                                        vector<ClusterOneSide> cluster_LR = cluster_one_side(strip_LR, time_LR, limit);
+
 					std::vector<cluster> CLUSTER;
 					CLUSTER.clear();
 					if(cluster_HR.size()>0 && cluster_LR.size()>0) CLUSTER = final_clustering(cluster_LR,cluster_HR,Strip_length[reference_strip]/(V_conector));
@@ -823,11 +856,58 @@ void ana_FEBv2::Loop()
 
 
 
-                        vector<std::pair<vector<int>,vector<double>>> cluster_HR_new = cluster_one_side(strip_HR, time_HR, 3.);
-                        vector<std::pair<vector<int>,vector<double>>> cluster_LR_new = cluster_one_side(strip_LR, time_LR, 3.);
+//                        vector<std::pair<vector<int>,vector<double>>> cluster_HR_new = cluster_one_side(strip_HR, time_HR, 3.);
+//                        vector<std::pair<vector<int>,vector<double>>> cluster_LR_new = cluster_one_side(strip_LR, time_LR, 3.);
+			//cout << "HR: " << endl;
+                        vector<ClusterOneSide> cluster_HR_new = cluster_one_side(strip_HR, time_HR, 3.);
+                        //cout << "LR: " << endl;
+                        vector<ClusterOneSide> cluster_LR_new = cluster_one_side(strip_LR, time_LR, 3.);
                         std::vector<cluster> CLUSTER;
                         CLUSTER.clear();
-                        if(cluster_HR_new.size()>0 && cluster_LR_new.size()>0) CLUSTER = final_clustering(cluster_LR_new,cluster_HR_new,Strip_length[reference_strip]/(V_conector));
+//                        if(cluster_HR_new.size()>0 && cluster_LR_new.size()>0) CLUSTER = final_clustering(cluster_LR_new,cluster_HR_new,Strip_length[reference_strip]/(V_conector));
+                        if(cluster_HR_new.size()>0 && cluster_LR_new.size()>0){
+				//cout << "cluster_HR_new.size(): " << cluster_LR_new.size() << ";  cluster_LR_new.size(): " << cluster_LR_new.size() << endl;
+                                CLUSTER = final_clustering(cluster_LR_new,cluster_HR_new,Strip_length[reference_strip]/(V_conector));
+                                double strip_diff = 999.;
+				int LR_ind_smallest = -1;
+                                int HR_ind_smallest = -1;
+                                for(int ij=0;ij<cluster_HR_new.size();ij++){
+                                        for(int ji=0;ji<cluster_LR_new.size();ji++){
+                                                if(abs(cluster_HR_new.at(ij).strip() - cluster_LR_new.at(ji).strip())<strip_diff) {
+							strip_diff = abs(cluster_HR_new.at(ij).strip() - cluster_LR_new.at(ji).strip());
+							LR_ind_smallest = ji;
+                                                        HR_ind_smallest = ij;
+						}
+                                        }
+                                }
+                                //cout << "strip_diff abs: " << strip_diff << ";   strip_diff: " << cluster_HR_new.at(HR_ind_smallest).strip() - cluster_LR_new.at(LR_ind_smallest).strip()  << endl;
+				strip_diff_h->Fill(cluster_HR_new.at(HR_ind_smallest).strip() - cluster_LR_new.at(LR_ind_smallest).strip());
+/*                        	if(CLUSTER.size()==0){ 
+					cout << "------------------>>>> strip_HR.size(): " << strip_HR.size() << ";   strip_LR.size(): " <<  strip_LR.size() << endl;
+					cout << "cluster_HR_new.size(): " << cluster_HR_new.size() << ";  cluster_LR_new.size(): " << cluster_LR_new.size() << endl;
+
+					cout << "     HR strips: ";
+					for(int ij=0;ij<cluster_HR_new.size();ij++){ 
+						for(int ji=0;ji<cluster_HR_new.at(ij).strips_v().size();ji++){
+							cout <<  cluster_HR_new.at(ij).strips_v().at(ji) << ",";
+						}	
+						cout << ";  ";
+					}
+					cout << endl;
+                                        cout << endl;
+                                        cout << "     LR strips: ";
+                                        for(int ij=0;ij<cluster_LR_new.size();ij++){
+                                                for(int ji=0;ji<cluster_LR_new.at(ij).strips_v().size();ji++){
+                                                        cout <<  cluster_LR_new.at(ij).strips_v().at(ji) << ",";
+                                                }
+                                                cout << ";  ";
+                                        }
+                                        cout << endl;
+                                        cout << endl;
+
+					cout << "smallest diff: " << cluster_HR_new.at(HR_ind_smallest).strip() - cluster_LR_new.at(LR_ind_smallest).strip() << endl;
+				}*/
+                        }
 
 /*			if(medium_num!=0 && CLUSTER.size()==0){
 				cout << "--->>> medium_num: " << medium_num << "; cluster_HR_new.size(): " <<  cluster_HR_new.size() << "; cluster_LR_new.size(): " << cluster_LR_new.size() << endl;
@@ -838,12 +918,26 @@ void ana_FEBv2::Loop()
 			if(jj==0) hNClusters->Fill(CLUSTER.size());
 			sum_cluster_size = sum_cluster_size + CLUSTER.size();
 			for(int ij=0;ij<CLUSTER.size();ij++){
+				if(jj==0) hsumTCluster_1D->Fill(CLUSTER.at(ij).sum_time());
                                 if(CLUSTER.at(ij).time()>0.) cluster_good=true;
-				if(jj==0) hClusterSize->Fill(CLUSTER.at(ij).size());
+				if(jj==0) {hClusterSize->Fill(CLUSTER.at(ij).size());}//; cout << "CLUSTER.at(ij).size(): " << CLUSTER.at(ij).size() << endl;}
 				if(jj==0) hdeltaTCluster_1D->Fill(CLUSTER.at(ij).time());
 				if(jj==0) hdeltaClusterT->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
+				if(CLUSTER.at(ij).time()>0.&&jj==0) {
+					number_of_good_clusters++;
+					if(CLUSTER.at(ij).HR_LR_strips_ratio()==1) number_of_good_clusters_ratio1++;
+				}
 			}
 			if(cluster_good) N_cluster_good++;
+
+/*			if(!cluster_good){
+				cout << "NOT EFFICIENT FOR CLUSTERING!!!" << endl;
+				cout << "CLUSTER.size(): " << CLUSTER.size() << endl;
+                        	for(int ij=0;ij<CLUSTER.size();ij++){
+					cout << "CLUSTER.at(ij).time(): " <<CLUSTER.at(ij).time() << ";  CLUSTER.at(ij).strip(): " << CLUSTER.at(ij).strip() << endl;
+                        	}
+			}
+*/
 
 			if(jj==0) hNClusters_2->Fill(CLUSTER_2.size());
 			sum_cluster2_size = sum_cluster2_size + CLUSTER_2.size();
@@ -878,19 +972,20 @@ void ana_FEBv2::Loop()
 				if(jj==0) hHRT_2->Fill(ntriggerHR_signal_strip);
 				if(jj==0) hLRT_2->Fill(ntriggerLR_signal_strip);
 			}
-			if (medium_num) {nANDstrip_medium_fired++;}
+			if (medium_num) {nANDstrip_medium_fired++;}// else { cout << "===================================================================" << endl;}
 			if (tight_num) {nANDstrip_tight_fired++;}
 			if (jj==0) hnPairs->Fill(n_paired_srip);
 			//std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
 		} //Event loop ends
 
 
+		cout << "---->> number_of_good_clusters: " << number_of_good_clusters << "; number_of_good_clusters_ratio1: " <<  number_of_good_clusters_ratio1 << endl;
 
 		if(jj==0 && ClusterE!=0){
                 	for(int ij=0;ij<100;ij++){
 				ClusterS.at(ij) = ClusterS.at(ij)/ClusterE;
                         	ClusterN.at(ij) = ClusterN.at(ij)/ClusterE;
-				cout << "limit: " << ClusterL.at(ij) << ";  Number of Clusters: " << ClusterN.at(ij) << ";  Cluster size: " << ClusterS.at(ij) << endl;
+				//cout << "limit: " << ClusterL.at(ij) << ";  Number of Clusters: " << ClusterN.at(ij) << ";  Cluster size: " << ClusterS.at(ij) << endl;
 				g_cluster_size->SetPoint(ij,ClusterL.at(ij),ClusterS.at(ij));
                                 g_cluster_number->SetPoint(ij,ClusterL.at(ij),ClusterN.at(ij));
 			}
@@ -973,11 +1068,11 @@ void ana_FEBv2::Loop()
 	can1->cd();
 	can1->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.root",hv_,sn_/*,mt_*/);
-	can1->SaveAs(s);
+	//can1->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.pdf",hv_,sn_/*,mt_*/);
-	can1->SaveAs(s);
+	//can1->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.png",hv_,sn_/*,mt_*/);
-	can1->SaveAs(s);
+	//can1->SaveAs(s);
 
 	TCanvas *c2 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
 	TPad *pad4 = new TPad("pad4","This is pad4",0.02,0.02,0.98,0.98,21);
@@ -1019,7 +1114,7 @@ void ana_FEBv2::Loop()
 	c2P->cd();
         c2P->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_deltaT_srip_profile.png",hv_,sn_/*,mt_*/);
-        c2P->SaveAs(s);
+        //c2P->SaveAs(s);
 
 	if(true){
         TCanvas *c2C = new TCanvas("c4C","The Ntuple canvas",200,10,900,780);
@@ -1064,11 +1159,11 @@ void ana_FEBv2::Loop()
         c2C->cd();
         c2C->Update();
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_srip.root",hv_,sn_/*,mt_*/);
-        c2C->SaveAs(s);
+        //c2C->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_srip.pdf",hv_,sn_/*,mt_*/);
-        c2C->SaveAs(s);
+        //c2C->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_srip.png",hv_,sn_/*,mt_*/);
-        c2C->SaveAs(s);
+        //c2C->SaveAs(s);
 	}
 
 
@@ -1090,11 +1185,11 @@ void ana_FEBv2::Loop()
 	c22->cd();
 	c22->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_srip.root",hv_,sn_/*,mt_*/);
-	c22->SaveAs(s);
+	//c22->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_srip.pdf",hv_,sn_/*,mt_*/);
-	c22->SaveAs(s);
+	//c22->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_srip.png",hv_,sn_/*,mt_*/);
-	c22->SaveAs(s);
+	//c22->SaveAs(s);
 
 
 
@@ -1104,15 +1199,12 @@ void ana_FEBv2::Loop()
 	pad42C->UseCurrentStyle();
 	pad42C->Draw();
 	pad42C->cd();
-	pad42C->SetGrid();
 	pad42C->SetRightMargin(0.12);
-	hsumTCluster_1D ->GetYaxis()->SetTitle("Cluster sum time [ns]");
-	hsumTCluster_1D ->GetXaxis()->SetTitle("Cluster Strips");
-	hsumTCluster_1D ->GetYaxis()->SetLabelOffset(0.007);
-	hsumTCluster_1D ->GetYaxis()->SetTitleOffset(1.5);
-	hsumTCluster_1D ->SetLabelSize(0.02,"x");
-	hsumTCluster_1D ->SetTitle("");
-	hsumTCluster_1D ->Draw("P");
+	hsumTCluster_1D->GetXaxis()->SetTitle("Cluster sum time [ns]");
+	hsumTCluster_1D->GetYaxis()->SetTitleOffset(1.5);
+	hsumTCluster_1D->SetLabelSize(0.02,"x");
+	hsumTCluster_1D->SetTitle("");
+	hsumTCluster_1D->Draw();
 	c22C->cd();
 	c22C->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster_sumT_srip.root",hv_,sn_/*,mt_*/);
@@ -1132,24 +1224,24 @@ void ana_FEBv2::Loop()
 	pad42C->cd();
 	pad42C->SetGrid();
 	pad42C->SetRightMargin(0.12);
-	hsumTCluster_2_1D ->GetYaxis()->SetTitle("Cluster2 sum time [ns]");
-	hsumTCluster_2_1D ->GetXaxis()->SetTitle("Cluster2 Strips");
-	hsumTCluster_2_1D ->GetYaxis()->SetLabelOffset(0.007);
-	hsumTCluster_2_1D ->GetYaxis()->SetTitleOffset(1.5);
-	hsumTCluster_2_1D ->SetLabelSize(0.02,"x");
-	hsumTCluster_2_1D ->SetTitle("");
-	hsumTCluster_2_1D ->Draw("P");
+	hsumTCluster_2_1D->GetYaxis()->SetTitle("Cluster2 sum time [ns]");
+	hsumTCluster_2_1D->GetXaxis()->SetTitle("Cluster2 Strips");
+	hsumTCluster_2_1D->GetYaxis()->SetLabelOffset(0.007);
+	hsumTCluster_2_1D->GetYaxis()->SetTitleOffset(1.5);
+	hsumTCluster_2_1D->SetLabelSize(0.02,"x");
+	hsumTCluster_2_1D->SetTitle("");
+	hsumTCluster_2_1D->Draw("P");
 	c22C->cd();
 	c22C->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_sumT_srip.root",hv_,sn_/*,mt_*/);
-	c22C->SaveAs(s);
+	//c22C->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_sumT_srip.pdf",hv_,sn_/*,mt_*/);
-	c22C->SaveAs(s);
+	//c22C->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_sumT_srip.png",hv_,sn_/*,mt_*/);
-	c22C->SaveAs(s);
+	//c22C->SaveAs(s);
 	}
 
-
+	gStyle->SetOptStat(1111);
 	TCanvas *cPairs = new TCanvas("cPairs","The Ntuple canvas",200,10,900,780);
 	TPad *padP = new TPad("padP","This is padP",0.02,0.02,0.98,0.98,21);
 	padP->UseCurrentStyle();
@@ -1172,8 +1264,10 @@ void ana_FEBv2::Loop()
 	cPairs->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_n_paired_srip.png",hv_,sn_/*,mt_*/);
 	cPairs->SaveAs(s);    
+        gStyle->SetOptStat(0);
 
 	if(true){
+        gStyle->SetOptStat(1111);
 	TCanvas *cPairsC = new TCanvas("cPairsC","The Ntuple canvas",200,10,900,780);
 	TPad *padPC = new TPad("padPC","This is padP",0.02,0.02,0.98,0.98,21);
 	padPC->UseCurrentStyle();
@@ -1196,6 +1290,7 @@ void ana_FEBv2::Loop()
 	cPairsC->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster_size.png",hv_,sn_/*,mt_*/);
 	cPairsC->SaveAs(s);    
+        gStyle->SetOptStat(0);
 	}
 
 
@@ -1217,17 +1312,18 @@ void ana_FEBv2::Loop()
         cPairsC->cd();
         cPairsC->Update();
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_size.root",hv_,sn_/*,mt_*/);
-        cPairsC->SaveAs(s);
+        //cPairsC->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_size.pdf",hv_,sn_/*,mt_*/);
-        cPairsC->SaveAs(s);
+        //cPairsC->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_size.png",hv_,sn_/*,mt_*/);
-        cPairsC->SaveAs(s);
+        //cPairsC->SaveAs(s);
         }
 
 
 
 
 	if(true){
+        gStyle->SetOptStat(1111);
 	TCanvas *cPairsCC = new TCanvas("cPairsCC","The Ntuple canvas",200,10,900,780);
 	TPad *padPCC = new TPad("padPCC","This is padP",0.02,0.02,0.98,0.98,21);
 	padPCC->UseCurrentStyle();
@@ -1250,6 +1346,7 @@ void ana_FEBv2::Loop()
 	cPairsCC->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters.png",hv_,sn_/*,mt_*/);
 	cPairsCC->SaveAs(s);    
+        gStyle->SetOptStat(0);
 	}
 
 
@@ -1271,11 +1368,11 @@ void ana_FEBv2::Loop()
 	cPairsCC->cd();
 	cPairsCC->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters2.root",hv_,sn_/*,mt_*/);
-	cPairsCC->SaveAs(s);
+	//cPairsCC->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters2.pdf",hv_,sn_/*,mt_*/);
-	cPairsCC->SaveAs(s);
+	//cPairsCC->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters2.png",hv_,sn_/*,mt_*/);
-	cPairsCC->SaveAs(s);    
+	//cPairsCC->SaveAs(s);    
 	}
 
 
@@ -1297,11 +1394,11 @@ void ana_FEBv2::Loop()
         cPairsm->cd();
         cPairsm->Update();
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_n_paired_srip_med.root",hv_,sn_/*,mt_*/);
-        cPairsm->SaveAs(s);
+        //cPairsm->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_n_paired_srip_med.pdf",hv_,sn_/*,mt_*/);
-        cPairsm->SaveAs(s);
+        //cPairsm->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_n_paired_srip_med.png",hv_,sn_/*,mt_*/);
-        cPairsm->SaveAs(s);
+        //cPairsm->SaveAs(s);
 
 
 	TCanvas *chdeltaT_1D = new TCanvas("chdeltaT_1D","The Ntuple canvas",200,10,900,780);
@@ -1371,11 +1468,11 @@ void ana_FEBv2::Loop()
 	chdeltaTC_1D->cd();
 	chdeltaTC_1D->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_1D_srip.root",hv_,sn_/*,mt_*/);
-	chdeltaTC_1D->SaveAs(s);
+	//chdeltaTC_1D->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_1D_srip.pdf",hv_,sn_/*,mt_*/);
-	chdeltaTC_1D->SaveAs(s);
+	//chdeltaTC_1D->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_deltaT_1D_srip.png",hv_,sn_/*,mt_*/);
-	chdeltaTC_1D->SaveAs(s);
+	//chdeltaTC_1D->SaveAs(s);
 	}
 
 
@@ -1407,11 +1504,11 @@ void ana_FEBv2::Loop()
         hsumT_1D_med->SetTitle("");
         hsumT_1D_med->Draw("Histo");
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_1D_srip_med.root",hv_,sn_/*,mt_*/);
-        chsumT_1Dm->SaveAs(s);
+       //chsumT_1Dm->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_1D_srip_med.pdf",hv_,sn_/*,mt_*/);
-        chsumT_1Dm->SaveAs(s);
+        //chsumT_1Dm->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_1D_srip_med.png",hv_,sn_/*,mt_*/);
-        chsumT_1Dm->SaveAs(s);
+        //chsumT_1Dm->SaveAs(s);
 
 
 
@@ -1419,11 +1516,11 @@ void ana_FEBv2::Loop()
 	csumTdeltaT_2D->cd();
 	hsumTdeltaT_2D->Draw("COLZ");
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_deltaT.root",hv_,sn_/*,mt_*/);
-	csumTdeltaT_2D->SaveAs(s);
+	//csumTdeltaT_2D->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_deltaT.pdf",hv_,sn_/*,mt_*/);
-	csumTdeltaT_2D->SaveAs(s);
+	//csumTdeltaT_2D->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_sumT_deltaT.png",hv_,sn_/*,mt_*/);
-	csumTdeltaT_2D->SaveAs(s);
+	//csumTdeltaT_2D->SaveAs(s);
 
 
 
@@ -1461,11 +1558,11 @@ void ana_FEBv2::Loop()
 	c3m->cd();
 	c3m->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_med.root",hv_,sn_/*,mt_*/);
-	c3m->SaveAs(s);
+	//c3m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_med.pdf",hv_,sn_/*,mt_*/);
-	c3m->SaveAs(s);
+	//c3m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_med.png",hv_,sn_/*,mt_*/);
-	c3m->SaveAs(s);
+	//c3m->SaveAs(s);
 
 
 	TCanvas *c3n = new TCanvas("c3n","The Ntuple canvas",200,10,780,780);
@@ -1473,33 +1570,33 @@ void ana_FEBv2::Loop()
 	c3n->SetGrid();
 	nPaired_per_strip->Draw("COLZ");
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_npaired_per_strip.root",hv_,sn_/*,mt_*/);
-	c3n->SaveAs(s);
+	//c3n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_npaired_per_strip.pdf",hv_,sn_/*,mt_*/);
-	c3n->SaveAs(s);
+	//c3n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_npaired_per_strip.png",hv_,sn_/*,mt_*/);
-	c3n->SaveAs(s);
+	//c3n->SaveAs(s);
 
 	TCanvas *c4n = new TCanvas("c4n","The Ntuple canvas",200,10,780,780);
 	c4n->cd();
 	c4n->SetGrid();
 	nFiredHR_per_strip->Draw("COLZ");
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredHR_per_strip.root",hv_,sn_/*,mt_*/);
-	c4n->SaveAs(s);
+	//c4n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredHR_per_strip.pdf",hv_,sn_/*,mt_*/);
-	c4n->SaveAs(s);
+	//c4n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredHR_per_strip.png",hv_,sn_/*,mt_*/);
-	c4n->SaveAs(s);
+	//c4n->SaveAs(s);
 
 	TCanvas *c5n = new TCanvas("c5n","The Ntuple canvas",200,10,780,780);
 	c5n->cd();
 	c5n->SetGrid();
 	nFiredLR_per_strip->Draw("COLZ");
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredLR_per_strip.root",hv_,sn_/*,mt_*/);
-	c5n->SaveAs(s);
+	//c5n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredLR_per_strip.pdf",hv_,sn_/*,mt_*/);
-	c5n->SaveAs(s);
+	//c5n->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nFiredLR_per_strip.png",hv_,sn_/*,mt_*/);
-	c5n->SaveAs(s);
+	//c5n->SaveAs(s);
 
 
 	TCanvas *ct3 = new TCanvas("ct3","The Ntuple canvas",200,10,780,780);
@@ -1565,12 +1662,13 @@ void ana_FEBv2::Loop()
 	c10m->cd();
 	c10m->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_1d_med.root",hv_,sn_/*,mt_*/);
-	c10m->SaveAs(s);
+	//c10m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_1d_med.pdf",hv_,sn_/*,mt_*/);
-	c10m->SaveAs(s);
+	//c10m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_DeltaTrig_side_1d_med.png",hv_,sn_/*,mt_*/);
-	c10m->SaveAs(s);
+	//c10m->SaveAs(s);
 
+        gStyle->SetOptStat(1111);
 	TCanvas *c11 = new TCanvas("c11","The Ntuple canvas",200,10,780,780);
 	TPad *pad20 = new TPad("pad20","This is pad10",0.05,0.05,0.98,0.55,21);
 	TPad *pad21 = new TPad("pad21","This is pad11",0.05,0.55,0.98,0.98,21);
@@ -1590,6 +1688,7 @@ void ana_FEBv2::Loop()
 	c11->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nStrip_side_1d.png",hv_,sn_/*,mt_*/);
 	c11->SaveAs(s);
+        gStyle->SetOptStat(0);
 
 	TCanvas *c11m = new TCanvas("c11m","The Ntuple canvas",200,10,780,780);
 	TPad *pad20m = new TPad("pad20m","This is pad10",0.05,0.05,0.98,0.55,21);
@@ -1605,11 +1704,11 @@ void ana_FEBv2::Loop()
 	c11m->cd();
 	c11m->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nStrip_side_1d_med.root",hv_,sn_/*,mt_*/);
-	c11m->SaveAs(s);
+	//c11m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nStrip_side_1d_med.pdf",hv_,sn_/*,mt_*/);
-	c11m->SaveAs(s);
+	//c11m->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_nStrip_side_1d_med.png",hv_,sn_/*,mt_*/);
-	c11m->SaveAs(s);
+	//c11m->SaveAs(s);
 
 
         TCanvas *c5np = new TCanvas("c5np","The Ntuple canvas",200,10,780,780);
@@ -1624,7 +1723,19 @@ void ana_FEBv2::Loop()
         c5np->SaveAs(s);
 
 
-
+	gStyle->SetOptFit(1111);
+        TCanvas *cstrip_diff_h = new TCanvas("cstrip_diff_h","strip_diff_h",200,10,780,780);
+        cstrip_diff_h->cd();
+        cstrip_diff_h->SetGrid();
+	strip_diff_h->Fit("gaus","","",-5,5);
+        strip_diff_h->Draw();
+        s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_strip_diff.root",hv_,sn_/*,mt_*/);
+        c5np->SaveAs(s);
+        s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_strip_diff.pdf",hv_,sn_/*,mt_*/);
+        c5np->SaveAs(s);
+        s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_strip_diff.png",hv_,sn_/*,mt_*/);
+        cstrip_diff_h->SaveAs(s);
+	gStyle->SetOptFit(0);
 
   	TCanvas *cg = new TCanvas("cg", "comp", 200, 10, 700, 500);
   	TPad *p1g = new TPad("p1g", "", 0, 0, 1, 1);
@@ -1658,6 +1769,36 @@ void ana_FEBv2::Loop()
         cg->SaveAs(s);
         s.Form("plots_904/_HV_%d_SN_%d_cluster_number_size.png",hv_,sn_/*,mt_*/);
         cg->SaveAs(s);
+
+	if(true){
+		TCanvas *cx = new TCanvas("cx","The Ntuple canvas",200,10,780,780);
+        	cx->cd();
+        	cx->SetGrid();
+                hHR_check_xtalk->Divide(hHR_check_xtalk_temp);
+        	hHR_check_xtalk->Draw("HIST");
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_HR.root",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_HR.pdf",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_HR.png",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+	}
+
+	if(true){
+		TCanvas *cx = new TCanvas("cx","The Ntuple canvas",200,10,780,780);
+        	cx->cd();
+        	cx->SetGrid();
+                hLR_check_xtalk->Divide(hLR_check_xtalk_temp);
+        	hLR_check_xtalk->Draw("HIST");
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_LR.root",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_LR.pdf",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+        	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_check_xtalk_LR.png",hv_,sn_/*,mt_*/);
+        	cx->SaveAs(s);
+	}
+
+
 
 	gApplication->Terminate();
 

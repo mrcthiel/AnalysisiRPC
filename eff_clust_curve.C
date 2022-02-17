@@ -122,22 +122,22 @@ void eff_clust_curve(int sn, int count, ...){
 
         for(int j=0; j<count; j++){
                 string fileName("");
-                fileName = Form("ScanId_%d/HV%d/plots_904/_HV_%d_SN_%d_MaxTrig_Cluster2_size.root",sn,(j+1),(j+1),sn);
+                fileName = Form("ScanId_%d/HV%d/plots_904/_HV_%d_SN_%d_MaxTrig_Cluster_size.root",sn,(j+1),(j+1),sn);
                 TFile _file0(fileName.c_str(),"read");
                 TCanvas* n =(TCanvas*)_file0.Get("cPairsC");
                 TPad* nn =(TPad*)n->GetPrimitive("padPC");
-                TH1F *mm = (TH1F*)nn->GetPrimitive("hClusterSize_2");
+                TH1F *mm = (TH1F*)nn->GetPrimitive("hClusterSize");
                 cout << mm->GetMean() << endl;
                 clust_size_v.push_back(mm->GetMean());
         }
 
         for(int j=0; j<count; j++){
 		string fileName("");
-		fileName = Form("ScanId_%d/HV%d/plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters2.root",sn,(j+1),(j+1),sn);
+		fileName = Form("ScanId_%d/HV%d/plots_904/_HV_%d_SN_%d_MaxTrig_N_Clusters.root",sn,(j+1),(j+1),sn);
 		TFile _file0(fileName.c_str(),"read");
-		TCanvas* n =(TCanvas*)_file0.Get("cPairsCC2");
+		TCanvas* n =(TCanvas*)_file0.Get("cPairsCC");
 		TPad* nn =(TPad*)n->GetPrimitive("padPCC");
-		TH1F *mm = (TH1F*)nn->GetPrimitive("hNClusters_2");
+		TH1F *mm = (TH1F*)nn->GetPrimitive("hNClusters");
 		cout << mm->GetMean() << endl;
 		clust_mult_v.push_back(mm->GetMean());
 	}
@@ -249,6 +249,7 @@ std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at("
    TLegend* legend = new TLegend(0.14,0.4,0.45,0.55);
    legend->SetTextFont(42);
    legend->SetBorderSize(0);  // no border
+   legend->SetFillStyle(4000);
    legend->SetFillColor(0);   // Legend background should be white
    legend->SetTextSize(0.04); // Increase entry font size! 
    legend->AddEntry(efficiency,"Efficiency","P");
@@ -263,7 +264,7 @@ std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at("
         Double_t xmax = p1g->GetUxmax();
         Double_t dx = (xmax - xmin) / 0.8; // 10 percent margins left and right
         Double_t ymin = 0.;// g_clust_size->GetHistogram()->GetMinimum();
-        Double_t ymax = 5.;//g_clust_size->GetHistogram()->GetMaximum();
+        Double_t ymax = 10.;//g_clust_size->GetHistogram()->GetMaximum();
         Double_t dy = (ymax - ymin) / 0.8; // 10 percent margins top and bottom
         p2g->Range(xmin-0.1*dx, ymin-0.1*dy, xmax+0.1*dx, ymax+0.1*dy);
     
@@ -297,17 +298,18 @@ std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at("
 		string outfile = "Efficiency";
 
 		string outfile_png = Form("ScanId_%d/Efficiency_Clust_SN%d_%s.png", sn, sn, wp.at(i));
-//                string outfile_png = Form("ScanId_%d/Efficiency_Clust_SN%d_%s.png", sn, sn, wp.at(i));
-//		string outfile_pdf = Form("ScanId_%d/Efficiency_Clust_SN%d_%s.pdf", sn, sn, wp.at(i));
-//		string outfile_root =Form("ScanId_%d/Efficiency_Clust_SN%d_%s.root", sn, sn, wp.at(i));
+		string outfile_pdf = Form("ScanId_%d/Efficiency_Clust_SN%d_%s.pdf", sn, sn, wp.at(i));
+		string outfile_root =Form("ScanId_%d/Efficiency_Clust_SN%d_%s.root", sn, sn, wp.at(i));
 
 		cg->SaveAs(outfile_png.c_str());
 
-//		gPad->SaveAs(outfile_pdf.c_str());
-//		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
-//		effout->cd();
-//		efficiency->Write("Efficiency");
-//		effout->Close();  
+		gPad->SaveAs(outfile_pdf.c_str());
+		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
+		effout->cd();
+		efficiency->Write("Efficiency");
+		g_clust_mult->Write("g_clust_mult");
+		g_clust_size->Write("g_clust_size");
+		effout->Close();  
 
 
 	}
