@@ -5,8 +5,8 @@
 void eff_curve(int sn, int count, ...){
 
 	std::vector<char *> wp;
-	wp.push_back("nocut");
-	wp.push_back("loose");
+	wp.push_back("Or");
+	wp.push_back("And");
 	wp.push_back("medium");
 	wp.push_back("tight");
 	wp.push_back("hr");
@@ -115,6 +115,7 @@ void eff_curve(int sn, int count, ...){
 
 	//loop no wp
 	for(int i=0;i<wp.size();i++){
+		if(i==3) continue;
 		std::vector<float> eff_on, eff_out;
 		eff_on.clear();
 		eff_out.clear();
