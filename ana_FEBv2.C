@@ -16,6 +16,7 @@ using namespace std;
 void ana_FEBv2::Loop()
 {
 
+	//double strip5_rate = 0;
 	bool isFEBv2r2 = true;
 
 	if (fChain == 0) return;
@@ -93,6 +94,7 @@ void ana_FEBv2::Loop()
 	float deltaT = -999;
 	float sumT = -999;
 	int ntrig_allevent=0;
+	int ntrig_allevent_muon_window=0;
 	int ntriggerHR_signal=0;
 	int ntriggerLR_signal=0;
 	int ntriggerHR3ns_signal=0;
@@ -367,9 +369,9 @@ void ana_FEBv2::Loop()
                                         double LR_trig = time_in_strip_new + time_to_conector_new;
                                         if ((LR_trig) < muW1_LR || (LR_trig) > muW2_LR ){
                                                 if(isFEBv2r2) {
-                                                        if(jj==0) hLR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*1*Strip_length[strip_numb])); //For Noise
+                                                        if(jj==0) hLR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*0.75*Strip_length[strip_numb]*0.1)); //For Noise
                                                 } else {
-                                                        if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*1*Strip_length[m_strip(frame[i])])); //For Noise
+                                                        if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*0.75*Strip_length[m_strip(frame[i])]*0.1)); //For Noise
                                                 }
                                         }
 				}
@@ -390,9 +392,9 @@ void ana_FEBv2::Loop()
                                         double HR_trig = time_in_strip_new + time_to_conector_new;
 					if ((HR_trig) < muW1_HR || (HR_trig) > muW2_HR ){
 						if(isFEBv2r2) {
-			        			if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*1*Strip_length[strip_numb])); //For Noise
+			        			if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*0.75*Strip_length[strip_numb]*0.1)); //For Noise
 			        		} else {
-			        			if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*1*Strip_length[m_strip(frame[i])])); //For Noise
+			        			if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*0.75*Strip_length[m_strip(frame[i])]*0.1)); //For Noise
 			     	   		}
 					} 
 				}
@@ -406,7 +408,7 @@ void ana_FEBv2::Loop()
 			petiroc.clear();
 			vector<double> time_petiroc;
 			time_petiroc.clear();
-                        for (uint32_t i=0;i<nframe;i++){
+                        for (uint32_t i=0;i<nframe;i++){ //for petiroc study
 				std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i]);
 	                        int strip_side = -9999;
         	                int strip_numb = -9999;
@@ -447,7 +449,7 @@ void ana_FEBv2::Loop()
 					}					
 				}
 			}
-			for(int ii = 0; ii<petiroc.size(); ii++){
+			for(int ii = 0; ii<petiroc.size(); ii++){ //for petiroc study
 				double time_temp = 9999999999999.;
 	                        for (uint32_t i=0;i<nframe;i++){
 					std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i]);
@@ -535,7 +537,7 @@ void ana_FEBv2::Loop()
 
 						double LR_trig = time_in_strip_new + time_to_conector_new;
 						if(jj==0) hLRT_->Fill(LR_trig);
-						if ((LR_trig) > muW1_LR and (LR_trig) < muW2_LR ){
+//						if ((LR_trig) > muW1_LR and (LR_trig) < muW2_LR ){
 
 							if(isFEBv2r2) {
 								allStrips[strip_numb].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
@@ -544,7 +546,8 @@ void ana_FEBv2::Loop()
 								allStrips[m_strip(frame[i])].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
 								//if(jj==0) hLR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
 							}
-						} /*else {
+//						} 
+						/*else {
                                                         if(isFEBv2r2) {
                                                                 if(jj==0) hLR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_LR-muW1_LR))*1e-9*1*Strip_length[strip_numb])); //For Noise
                                                         } else {
@@ -555,7 +558,7 @@ void ana_FEBv2::Loop()
 					if ((!isFEBv2r2 && c_side(m_channel(frame[i]))<0.5) || (isFEBv2r2 && strip_side==0)){
 						//HR strips
 						bool pass = false;
-                                                for(int pr=0;pr<petiroc.size();pr++){
+                                                for(int pr=0;pr<petiroc.size();pr++){//to check the first signal in petiroc
                                                         if(petiroc.at(pr)==c_petiroc(m_channel(frame[i]))){ 
 								histo_diff_petiroc->Fill((time_petiroc.at(pr)-m_time(m_traw(frame[i]))));
 								if((time_petiroc.at(pr)-m_time(m_traw(frame[i])))>-1) pass = true; 
@@ -579,7 +582,7 @@ void ana_FEBv2::Loop()
 
 						double HR_trig = time_in_strip_new + time_to_conector_new;
 						if(jj==0) hHRT_->Fill(HR_trig);
-                                                if ((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ){
+//                                                if ((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ){
 							if(isFEBv2r2) {
 								allStrips[strip_numb].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
 							        //if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
@@ -587,7 +590,8 @@ void ana_FEBv2::Loop()
 								allStrips[m_strip(frame[i])].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
 							        //if(jj==0) hHR->Fill(m_strip(frame[i]),1/(last_bc0*(time_max-time_min)*1e-9*120)); //For Noise
 							}
-                                                }/* else {
+//                                                }
+                                                /* else {
                                                         if(isFEBv2r2) {
                                                                 if(jj==0) hHR->Fill(strip_numb,1/(last_bc0*(time_max-time_min-(muW2_HR-muW1_HR))*1e-9*1*Strip_length[strip_numb])); //For Noise
                                                         } else {
@@ -663,14 +667,12 @@ void ana_FEBv2::Loop()
 						// HR not in muon window
 						allStrips[i].HRframeOK[fhr] = false;
 //						if ( ((allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) > muW1_HR-1000-(9*(abs(muW1_HR)-abs(muW2_HR))) and (allStrips[i].HRtime[fhr]-trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]) < muW2_HR-1000 ))
-                                                if ( ((HR_trig) > muW1_HR-1000-(9*(abs(muW1_HR)-abs(muW2_HR))) and (HR_trig) < muW2_HR-1000 ))
-
-							//trig = 2000 and 87000, signal is 1000,         
-						{
+//                                                if ( ((HR_trig) > muW1_HR-1000-(9*(abs(muW1_HR)-abs(muW2_HR))) and (HR_trig) < muW2_HR-1000 ))
+//							//trig = 2000 and 87000, signal is 1000,         
+//						{
 							allStrips[i].HRframeBkg[fhr] = true;
-							if(jj==0 && !isFEBv2r2) hLRn->Fill(i,1/(run_duration_in_sec*120)); //For Noise; newly added histogram
-                                                        if(jj==0 && isFEBv2r2) hLRn->Fill(i,1/(run_duration_in_sec*120));
-						}
+						if(jj==0) hHRn->Fill(i,1/((time_max-time_min-(muW2_HR-muW1_HR))*1e-9*0.75*Strip_length[i]*0.1)); //For Noise; newly added histogram
+//						}
 					}
 					if (allStrips[i].HRframeOK[fhr]){
                                                 strip_HR.push_back((int)i);
@@ -708,13 +710,17 @@ void ana_FEBv2::Loop()
 						// LR not in muon window
 						allStrips[i].LRframeOK[flr] = false;
 //						if ( ((allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) > muW1_LR-1000-(9*(abs(muW1_LR)-abs(muW2_LR))) and (allStrips[i].LRtime[flr]-trig[m_fpga(frame[allStrips[i].LRframe[flr]])]) < muW2_LR-1000 ))
-                                                if ( ((LR_trig) > muW1_LR-1000-(9*(abs(muW1_LR)-abs(muW2_LR))) and (LR_trig) < muW2_LR-1000 ))
-						{ 
+//                                                if ( ((LR_trig) > muW1_LR-1000-(9*(abs(muW1_LR)-abs(muW2_LR))) and (LR_trig) < muW2_LR-1000 ))
+//						{ 
 							allStrips[i].LRframeBkg[flr] = true;
-                                                        if(jj==0 && !isFEBv2r2) hHRn->Fill(i,1/(run_duration_in_sec*120)); //For Noise; newly added histogram
-							if(jj==0 && isFEBv2r2) hHRn->Fill(i,1/(run_duration_in_sec*120));
+                                                if(jj==0) hLRn->Fill(i,1/((time_max-time_min-(muW2_LR-muW1_LR))*1e-9*0.75*Strip_length[i]*0.1)); //For Noise; newly added histogram
+/*						if(i==5 && jj==0){
+							int ntrig_allevent_temp = ntrig_allevent+1; 
+							strip5_rate = strip5_rate + 1/((time_max-time_min-(muW2_LR-muW1_LR))*1e-9*0.75*Strip_length[i]*0.1);
+							cout << "strip5_rate: " << strip5_rate << "; ntrig_allevent: " << ntrig_allevent_temp << ";   strip5_rate/ntrig_allevent_temp: " << strip5_rate/ntrig_allevent_temp << std::endl;
 
-						}   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
+						}*/
+//						}   //THIS AND THE PREVIOUS FOUR LINES ADDED BY ME
 					}
 					if (allStrips[i].LRframeOK[flr]){
                                                 strip_LR.push_back((int)i);
@@ -1003,11 +1009,7 @@ void ana_FEBv2::Loop()
 //              myfile << sum_cluster2_size/(ntrig_allevent*40*pow(10,-9)*6000*cluster2_eff) <<"\n";
                 myfile << sum_cluster_size/(ntrig_allevent) <<"\n";
                 myfile << sum_cluster2_size/(ntrig_allevent) <<"\n";
-
-		if(jj==0){
-			cluster_eff = ((N_cluster_good)/float(ntrig_allevent));
-			cluster2_eff = ((N_cluster_good_2)/float(ntrig_allevent));
-		}
+		if(jj==0) ntrig_allevent_muon_window = ntrig_allevent;
 
 		myfile<<""<<"\n";
 
@@ -1054,25 +1056,25 @@ void ana_FEBv2::Loop()
 	newpad1->cd();
 	newpad1->SetGrid();
 	newpad1->SetLogy();
-	hLRn->Scale(1./ntrig_allevent);
+	hLRn->Scale(1./ntrig_allevent_muon_window);
 	hLRn->Draw("Hist");
-	hLRn->GetYaxis()->SetTitle("Noise Hz/cm");
+	hLRn->GetYaxis()->SetTitle("Noise Hz/cm2");
 	hLRn->GetXaxis()->SetTitle("Strips");
 	newpad2->cd();
 	newpad2->SetGrid();
-	//newpad2->SetLogy();
-	hHRn->Scale(1./ntrig_allevent);
+	newpad2->SetLogy();
+	hHRn->Scale(1./ntrig_allevent_muon_window);
 	hHRn->Draw("Hist");
-	hHRn->GetYaxis()->SetTitle("Noise Hz/cm");
+	hHRn->GetYaxis()->SetTitle("Noise Hz/cm2");
 	hHRn->GetXaxis()->SetTitle("Strips");
 	can1->cd();
 	can1->Update();
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.root",hv_,sn_/*,mt_*/);
-	//can1->SaveAs(s);
+	can1->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.pdf",hv_,sn_/*,mt_*/);
-	//can1->SaveAs(s);
+	can1->SaveAs(s);
 	s.Form("plots_904/_HV_%d_SN_%d_MaxTrig_new_noise_histo.png",hv_,sn_/*,mt_*/);
-	//can1->SaveAs(s);
+	can1->SaveAs(s);
 
 	TCanvas *c2 = new TCanvas("c4","The Ntuple canvas",200,10,900,780);
 	TPad *pad4 = new TPad("pad4","This is pad4",0.02,0.02,0.98,0.98,21);
