@@ -1007,7 +1007,8 @@ void ana_FEBv2::Loop()
                 myfile << (N_cluster_good_2)/float(ntrig_allevent) <<"\n";
 //		myfile << sum_cluster_size/(ntrig_allevent*40*pow(10,-9)*6000*cluster_eff) <<"\n";
 //              myfile << sum_cluster2_size/(ntrig_allevent*40*pow(10,-9)*6000*cluster2_eff) <<"\n";
-                myfile << sum_cluster_size/(ntrig_allevent) <<"\n";
+//                myfile << sum_cluster_size/(ntrig_allevent) <<"\n";
+                myfile << sum_cluster_size/(ntrig_allevent*40*pow(10,-9)*6000) /*<< "   ;  " << sum_cluster_size/(ntrig_allevent*40*pow(10,-9)*6000*(N_cluster_good)/float(ntrig_allevent)) */ <<"\n";
                 myfile << sum_cluster2_size/(ntrig_allevent) <<"\n";
 		if(jj==0) ntrig_allevent_muon_window = ntrig_allevent;
 
