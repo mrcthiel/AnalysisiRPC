@@ -259,6 +259,18 @@ void ana_FEBv2::Loop()
 	double cluster_eff = 1;
 	double cluster2_eff = 1;
 
+	float or_eff_on = 0;
+	float and_eff_on = 0;
+	float HR_eff_on = 0;
+	float LR_eff_on = 0;
+	float cluster_eff_on = 0;
+	float or_eff_out = 0;
+	float and_eff_out = 0;
+	float HR_eff_out = 0;
+	float LR_eff_out = 0;
+	float cluster_eff_out = 0;
+	float cluster_rate_out = 0;
+
 
 	for (int jj=0;jj<2;jj++){
 		double sum_cluster_size = 0;
@@ -996,6 +1008,22 @@ void ana_FEBv2::Loop()
                                 g_cluster_number->SetPoint(ij,ClusterL.at(ij),ClusterN.at(ij));
 			}
 		}
+		if(jj==0){
+			or_eff_on = (nANDstrip_noCut_fired)/float(ntrig_allevent);
+			and_eff_on = (nANDstrip_fired)/float(ntrig_allevent);
+			HR_eff_on = (nANDstripHR_noCut_fired)/float(ntrig_allevent);
+			LR_eff_on = (nANDstripLR_noCut_fired)/float(ntrig_allevent);
+			cluster_eff_on = (N_cluster_good)/float(ntrig_allevent);
+		}
+
+                if(jj==1){
+                        or_eff_out = (nANDstrip_noCut_fired)/float(ntrig_allevent);
+                        and_eff_out = (nANDstrip_fired)/float(ntrig_allevent);
+                        HR_eff_out = (nANDstripHR_noCut_fired)/float(ntrig_allevent);
+                        LR_eff_out = (nANDstripLR_noCut_fired)/float(ntrig_allevent);
+                        cluster_eff_out = (N_cluster_good)/float(ntrig_allevent);
+			cluster_rate_out = sum_cluster_size/(ntrig_allevent*40*pow(10,-9)*6000);
+                }
 
 		myfile << (nANDstrip_noCut_fired)/float(ntrig_allevent) <<"\n";
 		myfile << (nANDstrip_fired)/float(ntrig_allevent) <<"\n";
@@ -1015,6 +1043,16 @@ void ana_FEBv2::Loop()
 		myfile<<""<<"\n";
 
 	}
+                myfile<<""<<"\n";
+                myfile<<""<<"\n";
+                myfile<<""<<"\n";
+
+              myfile << "final OR eff:              " << (or_eff_on-or_eff_out)/(1-or_eff_out) <<"\n";
+              myfile << "final AND eff:             " << (and_eff_on-and_eff_out)/(1-and_eff_out)  <<"\n";
+              myfile << "final LR eff:              " << (HR_eff_on-HR_eff_out)/(1-HR_eff_out)  <<"\n";
+              myfile << "final HR eff:              " << (LR_eff_on-LR_eff_out)/(1-LR_eff_out)  <<"\n";
+              myfile << "final CLUSTER eff:         " << (cluster_eff_on-cluster_eff_out)/(1-cluster_eff_out)  <<"\n";
+              myfile << "final gamma cluster rate:  " << cluster_rate_out/((and_eff_on-and_eff_out)/(1-and_eff_out))  <<"\n";
 
 
 	myfile.close();
