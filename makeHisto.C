@@ -116,4 +116,4 @@ void makeHisto(Int_t rn) {
 	hist4->Draw("COLZ");
 	c4->cd();
    	c4->Update();
-	s.Form("plots_904/run_%d_2D_bc0timevsStrips.root",rn
+	s.Form("plots_904/run_%d_2D_bc0timevsStrips.root",rn);
