@@ -5,7 +5,6 @@
 
 
 Int_t           fCurrent; 
-double V_conector = 299.792*0.6;
 
 Long64_t LoadTree(Long64_t entry, TTree *fChain)
 {
@@ -23,9 +22,8 @@ Long64_t LoadTree(Long64_t entry, TTree *fChain)
 
 
 
-std::vector<double>  MuonWindow(int sn_, TTree *fChain, /*UInt_t nframe, ULong64_t frame[65535],*/ double time_min, double time_max, uint64_t nentries/*, TBranch *b_nframe, TBranch *b_frame*/){
+std::vector<double>  MuonWindow(int sn_, TTree *fChain, double time_min, double time_max, uint64_t nentries, bool isFEBv2r2){
 
-   bool isFEBv2r2 = true;
 
    TBranch *b_nframe;
    TBranch *b_frame;
@@ -174,8 +172,8 @@ std::vector<double>  MuonWindow(int sn_, TTree *fChain, /*UInt_t nframe, ULong64
 
 
 
-        double muW_HR =0.;
-        double muW_LR =0.;
+        double muW_HR =-1200.;
+        double muW_LR =-1200.;
 
         if(!(hHRT_temp->Integral()==0 || hLRT_temp->Integral()==0)){
 		hHRT_temp->GetXaxis()->SetRangeUser(hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())-50,hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())+50);
