@@ -3,13 +3,15 @@
 using namespace std;
 double V_conector = 299.792*0.52;//0.6;// mm/ns  - check it
 
+double dT_align_factor[48] = {1.62528,1.09566,1.12789,1.02194,0.348504,0.344317,0.948228,1.61381,0.731209,1.22794,1.17834,1.26704,0.925361,1.0831,0.937917,1.18672,2.10643,0.981501,1.34591,1.34473,0.324811,0.27107,1.229,1.01225,0.439263,0.467965,0.236236,0.407168,0,1.30108,0.569012,0.242675,0.0938157,0.38011,-0.197132,-0.419134,0.414141,0.264056,-0.576838,-0.533299,-0.229167,-1.0287,-0.809026,-0.597872,-0.761051,-0.590817,-0.430313,-0.294155};
+
 vector<int> Feb_Chamber(int sn_){
 
 	vector<int> Feb_Chamber_vec;
 	Feb_Chamber_vec.clear();
 
 	// side =1,2 = G,R
-	int side_ = 2;
+	int side_ = 1;
 
         int feb_ = 0;
         int chamber_ = 0;
@@ -28,17 +30,16 @@ vector<int> Feb_Chamber(int sn_){
 	if(sn_==261) {feb_=6; chamber_=31;}
         if(sn_==274||sn_==277) {feb_=10; chamber_=31;}
 	if(sn_==289||sn_==285||sn_==291)  {feb_=5; chamber_=31;}
-        if(sn_==644||sn_==681||sn_==682||sn_==691||sn_==695||sn_==697)  {feb_=12; chamber_=31;}
+        if(sn_==644||sn_==681||sn_==682||sn_==691||sn_==695||sn_==697)  {feb_=12; chamber_=31; side_=2;}
 	if(sn_==650||sn_==651||sn_==655||sn_==657||sn_==654||sn_==658||sn_==656||sn_==660||sn_==661||sn_==667||sn_==668||sn_==669||sn_==671||sn_==704) {feb_=11; chamber_=31;}
         if(sn_==293||sn_==296||sn_==297||sn_==298||sn_==299)  {feb_=14; chamber_=31;}
         if(sn_==294||sn_==295|sn_==311)  {feb_=17; chamber_=31;} 
-
 	if(sn_==714||sn_==718||sn_==711||sn_==736||sn_==737||sn_==738)  {feb_=18; chamber_=31;}
 	if(sn_>755&&sn_<782)  {feb_=18; chamber_=41;}
         if(sn_==357)  {feb_=18; chamber_=31;}
 	if(sn_>798&&sn_<815) {feb_=18; chamber_=31;}
         if(sn_>815) {feb_=18; chamber_=41;}
-
+        if(sn_==703||sn_==704||sn_==705) {feb_=11; chamber_=31; side_=1;}
 
 // ADD HERE NEW SACN_ID AND IT FEB AND CHAMBER NUMBERS
 // EXAMPLE:
@@ -317,9 +318,14 @@ double strip_coordinates(int CH, int XY, int BT, int zeroone, int side, int stri
 }
 
 
-vector<double> convert_DeltaTAndStrip_To_XY(int sn_, int strip, double deltaT){
+vector<double> convert_DeltaTAndStrip_To_XY(int sn_, double strip_d, double deltaT){
         vector<int> Feb_Chamber_vec = Feb_Chamber(sn_);
         int chamber = Feb_Chamber_vec.at(1);
+
+	double strip_res = strip_d-(int)strip_d;
+	int strip = (int)strip_d;
+
+	if(strip_res>0.5) strip++;
 
 	//strip_coordinates(int CH, int XY, int BT, int zeroone, int side){
 	double X0B = strip_coordinates(chamber, 0, 0, 0, 0, strip);
@@ -336,12 +342,21 @@ vector<double> convert_DeltaTAndStrip_To_XY(int sn_, int strip, double deltaT){
         double YB = Y0B+(Y1B-Y0B)/2;
         double YT = Y0T+(Y1T-Y0T)/2;
 
+	if(strip_res<=0.5){
+		XB=XB+((X1B-XB)/(0.5))*strip_res;
+        	XT=XT+((X1T-XT)/(0.5))*strip_res;
+	}
+	if(strip_res>0.5){
+                XB=XB-((XB-X0B)/(0.5))*(1.-strip_res);
+                XT=XT-((XT-X0T)/(0.5))*(1.-strip_res);
+	}
+
         vector<double> Strip_length_vec = Aligment_factor(sn_,3,1);
 	double L = Strip_length_vec.at(strip);
 	double l_ = 0.5*(V_conector*deltaT) + L/2;
 
-	double X = l_*((XT-XB)/L)+XB;
-        double Y = l_*((YT-YB)/L)+YB;
+	double X = l_*((XB-XT)/L)+XT;//l_*((XT-XB)/L)+XB;
+        double Y = l_*((YB-YT)/L)+YT;//l_*((YT-YB)/L)+YB;
 
 	vector<double> temp;
 	temp.clear();

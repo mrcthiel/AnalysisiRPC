@@ -1,5 +1,6 @@
 #ifndef Cluster_Algo_h
 #define Cluster_Algo_h
+#include "CalibAlig.h"
 
 
 using namespace std;
@@ -31,12 +32,16 @@ struct ClusterOneSide{
 		return strip_LR;
 	}
 
+        vector<double> time_v(){
+                return time_LR;
+        }
 };
 
 
 struct cluster{
-	void addClusterPair(ClusterOneSide LR_v, ClusterOneSide HR_v, double shift_deltaT_){strip_LR=LR_v.strip(); time_LR=LR_v.time(); strip_HR=HR_v.strip(); time_HR=HR_v.time(); size_LR=LR_v.size(); size_HR=HR_v.size(); strip_LR_v=LR_v.strips_v(); strip_HR_v=HR_v.strips_v(); shift_deltaT=shift_deltaT_;}
+	void addClusterPair(ClusterOneSide LR_v, ClusterOneSide HR_v, double shift_deltaT_, int sn__){strip_LR=LR_v.strip(); time_LR=LR_v.time(); strip_HR=HR_v.strip(); time_HR=HR_v.time(); size_LR=LR_v.size(); size_HR=HR_v.size(); strip_LR_v=LR_v.strips_v(); strip_HR_v=HR_v.strips_v(); shift_deltaT=shift_deltaT_; sn_=sn__; time_LR_v=LR_v.time_v(); time_HR_v=HR_v.time_v();} 
 
+	int sn_;
 	double strip_LR;
 	double time_LR;
 	double strip_HR;
@@ -46,12 +51,20 @@ struct cluster{
         int size_HR;
 	vector<int> strip_LR_v;
         vector<int> strip_HR_v;
+        vector<double> time_LR_v;
+        vector<double> time_HR_v;
 
 	double time(){
 		double time = time_LR-time_HR+shift_deltaT;
 		time = time/2.;
 		return time;
 	}
+
+        double time_XY(){
+                double time = time_HR-time_LR;
+                return time;
+        }
+
 
 	double sum_time(){
 		double time = time_LR+time_HR;
@@ -75,6 +88,40 @@ struct cluster{
 		}
 		size = -size+strip_LR_v.size()+strip_HR_v.size();
 		return size;
+	}
+
+	double X(){
+		double x = 0.;
+		int n = 0;
+		for(int i=0;i<strip_HR_v.size();i++){
+			for(int j=0;j<strip_LR_v.size();j++){
+				if(strip_LR_v.at(j)==strip_HR_v.at(i)){
+                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)+dT_align_factor[strip_LR_v.at(j)]));
+					x = x + X_Y.at(0);
+					n = n + 1;
+				}
+			}
+		}
+
+		if(n!=0) x = x/n;
+		return x;
+	}
+
+	double Y(){
+                double y = 0.;
+                int n = 0;
+                for(int i=0;i<strip_HR_v.size();i++){
+                        for(int j=0;j<strip_LR_v.size();j++){
+                                if(strip_LR_v.at(j)==strip_HR_v.at(i)){
+                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)+dT_align_factor[strip_LR_v.at(j)]));
+                                        y = y + X_Y.at(1);
+                                        n = n + 1;
+                                }
+                        }
+                }
+
+                if(n!=0) y = y/n;
+		return y;
 	}
 
 	double HR_LR_strips_ratio(){
@@ -171,7 +218,7 @@ vector<ClusterOneSide> cluster_one_side(vector<int> strip, vector<double> time, 
 }
 
 
-std::vector<cluster> final_clustering(vector<ClusterOneSide> LR_c, vector<ClusterOneSide> HR_c,double shift_deltaT){
+std::vector<cluster> final_clustering(vector<ClusterOneSide> LR_c, vector<ClusterOneSide> HR_c,double shift_deltaT, int sn_){
 
 	std::vector<cluster> Cluster_v;
 	Cluster_v.clear();
@@ -192,7 +239,7 @@ std::vector<cluster> final_clustering(vector<ClusterOneSide> LR_c, vector<Cluste
 		}
 		if(abs(HR_c.at(HR_ind_smallest).strip() - LR_c.at(LR_ind_smallest).strip())<=1.){
 			cluster temp0;
-			temp0.addClusterPair(LR_c.at(LR_ind_smallest),HR_c.at(HR_ind_smallest),shift_deltaT);
+			temp0.addClusterPair(LR_c.at(LR_ind_smallest),HR_c.at(HR_ind_smallest),shift_deltaT,sn_);
 			Cluster_v.push_back(temp0);
 			LR_c.erase(LR_c.begin()+LR_ind_smallest);
 			HR_c.erase(HR_c.begin()+HR_ind_smallest);

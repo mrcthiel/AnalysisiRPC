@@ -14,6 +14,11 @@ run_ana_FEBv2(${HV},${scanID},"/eos/cms/store/user/mthiel/roottrees/")
 .q
 EOF
 
+root -l -b <<EOF
+.x plot_chamber.C(${HV},${scanID})
+.q
+EOF
+
 #root -l -b <<EOF
 #.L dqm_beamdump.C
 #dqm_beamdump(${HV},${scanID},5000,"/eos/cms/store/user/mthiel/roottrees/")

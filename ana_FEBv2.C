@@ -123,6 +123,17 @@ void ana_FEBv2::Loop()
 
 	int side = Feb_Chamber(sn_).at(2);
 
+	//for Y alignment
+	double Y_align[48] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+        double Y_align_n[48] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        double dT_align[48] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+        double dT_align_n[48] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+//        double Y_align_factor[48] = {34.5119,76.495,72.4714,78.7625,128.835,132.512,85.0249,31.0071,102.627,65.9558,73.441,65.4189,87.7693,73.0123,84.7136,67.063,0,83.8527,54.1452,57.2965,136.777,136.958,61.6389,80.2829,125.135,124.226,142.825,128.327,156.389,58.7709,114.581,140.605,150.407,127.332,171.906,193.249,125.997,136.218,206.176,200.295,176.068,241.033,226.945,215.575,230.945,213.202,196.946,183.853};
+
+        double Y_align_factor[48] = {38.0263,79.0385,76.0406,84.3025,136.791,137.119,90.0484,38.1663,106.995,68.2962,72.1717,65.2216,91.8498,79.6549,90.9139,71.5843,0,87.603,59.2821,59.4001,138.702,142.885,68.4777,85.3395,129.846,127.63,145.619,132.369,163.946,63.1836,119.826,145.166,156.684,134.537,179.186,196.337,131.947,143.551,208.459,205.077,181.591,247.037,233.232,220.436,236.671,218.817,204.194,192.004};
+
+        double dT_align_factor[48] = {1.62528,1.09566,1.12789,1.02194,0.348504,0.344317,0.948228,1.61381,0.731209,1.22794,1.17834,1.26704,0.925361,1.0831,0.937917,1.18672,2.10643,0.981501,1.34591,1.34473,0.324811,0.27107,1.229,1.01225,0.439263,0.467965,0.236236,0.407168,0,1.30108,0.569012,0.242675,0.0938157,0.38011,-0.197132,-0.419134,0.414141,0.264056,-0.576838,-0.533299,-0.229167,-1.0287,-0.809026,-0.597872,-0.761051,-0.590817,-0.430313,-0.294155};
+
 	for (int jj=0;jj<2;jj++){ // jj=0->on muon window; jj=1->out muon window
 		double sum_cluster_size = 0;
 		if(jj==1){
@@ -357,8 +368,8 @@ void ana_FEBv2::Loop()
 						hHRn->Fill(i,1/((time_max-time_min-(muW2_HR-muW1_HR))*1e-9*0.9*Strip_length[i]*0.1)); //For Noise
 					}
 					if (allStrips[i].HRframeOK[fhr]){
-						strip_HR.push_back((int)i);
-						time_HR.push_back(time_in_strip_new); 
+						//strip_HR.push_back((int)i);
+						//time_HR.push_back(time_in_strip_new); 
 						ntriggerHR_signal++;
 						ntriggerHR_signal_per_strip++;
 					}
@@ -380,8 +391,8 @@ void ana_FEBv2::Loop()
 						hLRn->Fill(i,1/((time_max-time_min-(muW2_LR-muW1_LR))*1e-9*0.9*Strip_length[i]*0.1)); //For Noise
 					}
 					if (allStrips[i].LRframeOK[flr]){
-						strip_LR.push_back((int)i);
-						time_LR.push_back(time_in_strip_new);
+						//strip_LR.push_back((int)i);
+						//time_LR.push_back(time_in_strip_new);
 						ntriggerLR_signal++;
 						ntriggerLR_signal_per_strip++;
 					}
@@ -406,20 +417,26 @@ void ana_FEBv2::Loop()
 					double time_to_conector_new2 = LR_to_conctor[i]/V_conector-LR_to_conctor[reference_strip]/V_conector;
 					double LR_trig = time_in_strip2_new + time_to_conector_new2;
 
-					//strip_HR.push_back((int)i);
-					//time_HR.push_back(time_in_strip_new);
-					//strip_LR.push_back((int)i);
-					//time_LR.push_back(time_in_strip2_new);
-
+					strip_HR.push_back((int)i);
+					time_HR.push_back(time_in_strip); //time_in_strip_new
+					strip_LR.push_back((int)i);
+					time_LR.push_back(time_in_strip2); //time_in_strip2_new
 
 					deltaT=time_in_strip2_new-time_in_strip_new+Strip_length[reference_strip]/(V_conector);
 					deltaT=deltaT/2.;//-i*0.3+7;//0.15 2
 					if(deltaT>0) n_paired_srip_med++;
 
-					vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2));//0.3 7.
+					vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2+dT_align_factor[i]));//0.3 7.
+					if(align_XY && X_Y.at(1)>-200 && X_Y.at(1)<1500 && jj==1){
+						Y_align[i] = Y_align[i]+X_Y.at(1);
+                                                Y_align_n[i] = Y_align_n[i]+1;
+						dT_align[i] = dT_align[i]+(time_in_strip-time_in_strip2);
+						dT_align_n[i] = dT_align_n[i]+1;
+					}
+
                                         //vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(m_time(m_traw(frame[allStrips[i].deltas[d].second]))-m_time(m_traw(frame[allStrips[i].deltas[d].first]))-time_corr_HR+time_corr_LR+10.));//0.3 7.
 
-					h2_XY->Fill(X_Y.at(0),X_Y.at(1));
+					h2_XY->Fill(X_Y.at(0),(X_Y.at(1)/*+Y_align_factor[i]*/));
 					//std::cout << "X: " << X_Y.at(0) << "; Y: " << X_Y.at(1) << std::endl;
 
 					sumT=time_in_strip2_new+time_in_strip_new;//LR_trig+HR_trig;
@@ -442,7 +459,7 @@ void ana_FEBv2::Loop()
 
 					std::vector<cluster> CLUSTER;
 					CLUSTER.clear();
-					if(cluster_HR.size()>0 && cluster_LR.size()>0) CLUSTER = final_clustering(cluster_LR,cluster_HR,Strip_length[reference_strip]/(V_conector));
+					if(cluster_HR.size()>0 && cluster_LR.size()>0) CLUSTER = final_clustering(cluster_LR,cluster_HR,Strip_length[reference_strip]/(V_conector),sn_);
 					if(ClusterE==0) ClusterL.push_back(limit);
 					if(ClusterE==0) ClusterN.push_back(CLUSTER.size()); else ClusterN.at(ij) = ClusterN.at(ij)+CLUSTER.size();
 					if(ClusterE==0){
@@ -471,7 +488,7 @@ void ana_FEBv2::Loop()
 			std::vector<cluster> CLUSTER;
 			CLUSTER.clear();
 			if(cluster_HR_new.size()>0 && cluster_LR_new.size()>0){
-				CLUSTER = final_clustering(cluster_LR_new,cluster_HR_new,Strip_length[reference_strip]/(V_conector));
+				CLUSTER = final_clustering(cluster_LR_new,cluster_HR_new,Strip_length[reference_strip]/(V_conector),sn_);
 				// for cluster study
 				if(plot_clust_par){
 					double strip_diff = 999.;
@@ -497,6 +514,11 @@ void ana_FEBv2::Loop()
 				if(CLUSTER.at(ij).size()>0.) hClusterSize->Fill(CLUSTER.at(ij).size());
 				hdeltaTCluster_1D->Fill(CLUSTER.at(ij).time());
 				hdeltaClusterT->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
+//                                int strip_cls_int = (int)CLUSTER.at(ij).strip();
+//                                if((CLUSTER.at(ij).strip()-strip_cls_int)>0.5) strip_cls_int = strip_cls_int+1;
+//				vector<double> X_Y_cls = convert_DeltaTAndStrip_To_XY(sn_,CLUSTER.at(ij).strip(),CLUSTER.at(ij).time_XY()/*+dT_align_factor[strip_cls_int]*/);
+//				if(CLUSTER.at(ij).size()>=2) h2_XY_cls->Fill(X_Y_cls.at(0),X_Y_cls.at(1)/*+Y_align_factor[strip_cls_int]*/);
+                                if(CLUSTER.at(ij).size()>=2) h2_XY_cls->Fill(CLUSTER.at(ij).X(),CLUSTER.at(ij).Y());
 			}
 
 			if(cluster_good) N_cluster_good++;
@@ -621,8 +643,13 @@ void ana_FEBv2::Loop()
 			h2_XY->GetYaxis()->SetTitle("y [mm]");
 			h2_XY->GetXaxis()->SetTitle("x [mm]");
 			h2_XY->SetMarkerSize(4);
-			plot_and_save_2D(h2_XY, sss, "X_Y", hv_, sn_, "COLZ");
+			plot_and_save_2D(h2_XY, sss, "X_Y", hv_, sn_, "P");
 
+                        h2_XY_cls->SetTitle("");
+                        h2_XY_cls->GetYaxis()->SetTitle("y [mm]");
+                        h2_XY_cls->GetXaxis()->SetTitle("x [mm]");
+                        h2_XY_cls->SetMarkerSize(4);
+                        plot_and_save_2D(h2_XY_cls, sss, "X_Y_cls", hv_, sn_, "P");
 
 			hdeltaClusterT->SetTitle("");
 			hdeltaClusterT->GetYaxis()->SetTitle("Cluster delta time [ns]");
@@ -686,7 +713,7 @@ void ana_FEBv2::Loop()
 			if(jj==0) hHRn_gamma_LR = hLRn->Integral()/48.;
 			if(jj==0) gamma_cluster_size = hClusterSize->GetMean(); 
 
-			hLR->Reset(); hHR->Reset(); hLRn->Reset(); hHRn->Reset(); nFiredHR_per_strip->Reset(); nFiredLR_per_strip->Reset(); hdeltaT->Reset(); hsumT->Reset(); hdeltaT_1D->Reset(); hsumT_1D->Reset(); hLRT_->Reset(); hHRT_->Reset(); hLRT_temp->Reset(); hHRT_temp->Reset(); hLRT_2->Reset(); hHRT_2->Reset(); hnPairs->Reset(); hdeltaTCluster_1D->Reset(); hsumTCluster_1D->Reset(); hClusterSize->Reset(); hNClusters->Reset(); hdeltaClusterT->Reset(); hLRT_strip23->Reset(); hHRT_strip23->Reset(); hLHRn_dif->Reset(); hLHR_dif->Reset(); hLR_ns->Reset(); hHR_ns->Reset(); h2_XY->Reset(); hLHRn->Reset(); 
+			hLR->Reset(); hHR->Reset(); hLRn->Reset(); hHRn->Reset(); nFiredHR_per_strip->Reset(); nFiredLR_per_strip->Reset(); hdeltaT->Reset(); hsumT->Reset(); hdeltaT_1D->Reset(); hsumT_1D->Reset(); hLRT_->Reset(); hHRT_->Reset(); hLRT_temp->Reset(); hHRT_temp->Reset(); hLRT_2->Reset(); hHRT_2->Reset(); hnPairs->Reset(); hdeltaTCluster_1D->Reset(); hsumTCluster_1D->Reset(); hClusterSize->Reset(); hNClusters->Reset(); hdeltaClusterT->Reset(); hLRT_strip23->Reset(); hHRT_strip23->Reset(); hLHRn_dif->Reset(); hLHR_dif->Reset(); hLR_ns->Reset(); hHR_ns->Reset(); h2_XY->Reset(); h2_XY_cls->Reset(); hLHRn->Reset(); 
 		}
 
 	}
@@ -705,6 +732,37 @@ void ana_FEBv2::Loop()
 
 	myfile.close();
 
+	//for Y aligment
+	if(align_XY){
+		int best_strip = 0;
+		double best_strip_diff = abs(Y_align[0]/Y_align_n[0]-Strip_length[0]);
+		for(int i = 0; i<48; i++){
+			std::cout << "Y_align[i]/Y_align_n[i]: " << Y_align[i]/Y_align_n[i] << ";  Y_align_n[i]: " << Y_align_n[i] << std::endl; 
+			if(abs(Y_align[i]/Y_align_n[i]-Strip_length[i])<best_strip_diff){
+				best_strip = i;
+				best_strip_diff = abs(Y_align[i]/Y_align_n[i]-Strip_length[i]);
+			}
+		}
+		std::cout << "Best strip: " << best_strip << "; Y-strip aligment factors:" << std::endl;
+        	for(int i = 0; i<48; i++){
+			std::cout << (Y_align[best_strip]/Y_align_n[best_strip]-Y_align[i]/Y_align_n[i])  << ",";
+		}
+		std::cout << std::endl;
+		std::cout << "=============================" << std::endl;
+		best_strip_diff=99999;
+                for(int i = 0; i<48; i++){
+                        if(abs(dT_align[i]/dT_align_n[i])<best_strip_diff){
+                                best_strip = i;
+				std::cout << "best strip in time: " << i << "; time:" << abs(dT_align[i]/dT_align_n[i]) << std::endl;
+                                best_strip_diff = abs(dT_align[i]/dT_align_n[i]);
+                        }
+                }
+                for(int i = 0; i<48; i++){
+                        std::cout << (dT_align[best_strip]/dT_align_n[best_strip]-dT_align[i]/dT_align_n[i])  << ",";
+                }
+                std::cout << std::endl;
+	}
+	//for clustering study
 	if(plot_clust_par){
 		gStyle->SetOptFit(1111);
 		TCanvas *cstrip_diff_h = new TCanvas("cstrip_diff_h","strip_diff_h",200,10,780,780);

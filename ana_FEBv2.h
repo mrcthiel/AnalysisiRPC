@@ -55,6 +55,7 @@ class ana_FEBv2 {
 		bool plot_clust_par = false;
 		bool print_gamma_histos = true;
 		bool no_trig_case = false;
+		bool align_XY = false;
 	        double V_conector = 299.792*0.52;//0.6;// mm/ns  - check it
 
                 TH1F* hLR_ns = new TH1F("hLR_ns", "number of LR signals", 3500, 0.0, 35000);
@@ -90,8 +91,10 @@ class ana_FEBv2 {
 		TGraph *g_cluster_size = new TGraph();
 		TGraph *g_cluster_number = new TGraph();
 
-		TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",400,-60,720,400,-20,1300);
-//                TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",100,-100,760,800,-200,1520);
+//		TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",400,-60,720,400,-20,1300);
+                TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",2000,-100,760,6000,-200,1520);
+                TH2F* h2_XY_cls = new TH2F("h2_XY_cls"," X - Y ",2000,-100,760,6000,-200,1520);
+
 
 		Long64_t nbytes = 0, nb = 0;
 		uint64_t t_bc0[3];
