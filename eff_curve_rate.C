@@ -2,7 +2,7 @@
 #include<stdio.h>
 
 
-void eff_curve(int sn, int count, ...){
+void eff_curve_rate(int sn, int count, ...){
 
 	std::vector<char *> wp;
 	wp.push_back("OR");
@@ -11,8 +11,10 @@ void eff_curve(int sn, int count, ...){
 	wp.push_back("LR");
 	wp.push_back("Cluster");
 
+
 	std::vector<double> HVs;
-	std::vector<float> effnocut_on, effloose_on, effhr_on, efflr_on, effnocut_out, effloose_out, effhr_out, efflr_out, effcluster_on, effcluster_out;
+	std::vector<float> effnocut_on, effloose_on, effhr_on, efflr_on, effnocut_out, effloose_out, effhr_out, efflr_out, effcluster_on, effcluster_out, gamma_cluster_rate;
+
 	HVs.clear();
 	effnocut_on.clear();
 	effloose_on.clear();
@@ -24,6 +26,7 @@ void eff_curve(int sn, int count, ...){
 	efflr_out.clear();
 	effcluster_on.clear();
 	effcluster_out.clear();
+	gamma_cluster_rate.clear();
 
 	va_list list;
 	va_start(list, count);
@@ -41,7 +44,9 @@ void eff_curve(int sn, int count, ...){
 		Int_t ncols;
 		float effnocuton, efflooseon, effmediumon, efftighton, effhron, efflron, effclusteron, effcluster2on;
 		float effnocutout, efflooseout, effmediumout, efftightout, effhrout, efflrout, effclusterout, effcluster2out;
+		float gammaclusterrate;
 		float temp;
+
 		ncols=0;
 		ncols=fscanf(fp,"%f", &effnocuton);
 		effnocut_on.push_back(effnocuton);
@@ -76,12 +81,17 @@ void eff_curve(int sn, int count, ...){
 		ncols=11;
 		ncols=fscanf(fp,"%f", &effclusterout);
 		effcluster_out.push_back(effclusterout);
+		ncols=12;
+		ncols=fscanf(fp,"%f", &gammaclusterrate);
+		gamma_cluster_rate.push_back(gammaclusterrate/((effloose_on.at(j)-effloose_out.at(j))/(1.-effloose_out.at(j))));
+
 		fclose(fp);
 	}
 
 
 	//loop no wp
 	for(int i=0;i<wp.size();i++){
+		if(i!=1) continue;
 		std::vector<float> eff_on, eff_out;
 		eff_on.clear();
 		eff_out.clear();
@@ -98,8 +108,6 @@ void eff_curve(int sn, int count, ...){
 		float HVmin = 6000;
 		float HVmax = 7400;
 		for(int j=0; j<count; j++){
-
-
 			float eff_new = (eff_on.at(j)-eff_out.at(j))/(1.-eff_out.at(j));
 			efficiency->SetPoint(j,(HVs.at(j)*1000),eff_new);
 			efficiency->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
@@ -109,10 +117,7 @@ void eff_curve(int sn, int count, ...){
 
 			if(j==0) HVmin = HVs.at(j)*1000;
 			if(j==(count-1)) HVmax = HVs.at(j)*1000;
-
 		}
-
-
 
 		TF1* sigmoid = new TF1("sigmoid","(1-sqrt((1-[0])*(1-[0])))/(1+exp([1]*([2]-x)))",6000,7400);
 		sigmoid->SetParName(0,"#epsilon_{max}");
@@ -140,16 +145,37 @@ void eff_curve(int sn, int count, ...){
 		ltx->SetTextSize(0.04);
 		double knee = p3 - log(1/0.95-1)/p2;
 		double WP = knee+120;
+		cout << "WP: " << WP << endl;
 		TLine* lWP = new TLine(WP, 0., WP, 1);
 		lWP->SetLineStyle(2);
 		lWP->Draw("SAME");
-		cout << "WP: " << WP << endl;
 		double shift = 0.5;
 		double add = (uLimit-lLimit)/11., up = 0.3; 
 		ltx->DrawLatex(HVmin, 0.48, Form("Eff(WP) = %.2f", sigmoid->Eval(WP)));
 		ltx->DrawLatex(HVmin, 0.41, Form("WP = %.0f V", WP));
 		ltx->DrawLatex(HVmin, 0.34, Form("knee = %.0f V", knee));
 		ltx->DrawLatex(HVmin, 0.27, Form("HV 50% = %.0f V", p3));
+
+		double HV_low = 0;
+		double HV_up = 0;
+		double gcr_low = 0;
+		double gcr_up = 0;
+
+		for(int j=0; j<count; j++){
+			if(HVs.at(j)*1000<WP){
+				HV_low = HVs.at(j)*1000;
+				gcr_low = gamma_cluster_rate.at(j);
+			} else {
+				HV_up = HVs.at(j)*1000;
+				gcr_up = gamma_cluster_rate.at(j);
+				break;
+			}
+		}
+
+		double gcr_wp = ((gcr_up-gcr_low)/(HV_up-HV_low))*(WP-HV_low) + gcr_low;
+		cout << "=============>>>>>  gcr_wp: " << gcr_wp << endl;
+		ltx->DrawLatex(HVmin, 0.20, Form("BKG(WP) = %.0f Hz/cm2", gcr_wp));
+
 		TLine* plateau = new TLine(lLimit-50, p1, uLimit+50, p1);
 		plateau->SetLineStyle(2);
 		plateau->Draw();
@@ -158,9 +184,9 @@ void eff_curve(int sn, int count, ...){
 		else add = lLimit+add;
 		ltx->DrawLatex(add, p1+0.02, Form("plateau = %.2f", p1));
 		string outfile = "Efficiency";
-		string outfile_png = Form("ScanId_%d/Efficiency_SN%d_%s.png", sn, sn, wp.at(i));
-		string outfile_pdf = Form("ScanId_%d/Efficiency_SN%d_%s.pdf", sn, sn, wp.at(i));
-		string outfile_root =Form("ScanId_%d/Efficiency_SN%d_%s.root", sn, sn, wp.at(i));
+		string outfile_png = Form("ScanId_%d/Efficiency_rate_SN%d_%s.png", sn, sn, wp.at(i));
+		string outfile_pdf = Form("ScanId_%d/Efficiency_rate_SN%d_%s.pdf", sn, sn, wp.at(i));
+		string outfile_root =Form("ScanId_%d/Efficiency_rate_SN%d_%s.root", sn, sn, wp.at(i));
 		gPad->SaveAs(outfile_png.c_str());
 		gPad->SaveAs(outfile_pdf.c_str());
 		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");
