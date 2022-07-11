@@ -22,7 +22,7 @@ void plot_and_save_2D(TH2F *h, TString sss, string ss, int hv_,int sn_, TString 
 	c2->SaveAs(s);
 }
 
-void plot_and_save_1D(TH1F *h, TString sss, string ss, int hv_,int sn_, int gst=0){
+void plot_and_save_1D(TH1F *h, TString sss, string ss, int hv_,int sn_, int gst=0, TString ssss=""){
 	gStyle->SetOptStat(gst);
 	TCanvas *c22 = new TCanvas("c42C","The Ntuple canvas",200,10,900,780);
 	TPad *pad42C = new TPad("pad42C","This is pad42",0.02,0.02,0.98,0.98,21);
@@ -37,15 +37,18 @@ void plot_and_save_1D(TH1F *h, TString sss, string ss, int hv_,int sn_, int gst=
 	c22->cd();
 	c22->Update();
 	TString s("");
-	s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.root",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+	/*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.root",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.root",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
 	c22->SaveAs(s);
-	s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+	/*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
 	c22->SaveAs(s);
-	s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.png",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+	/*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.png",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.png",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
 	c22->SaveAs(s);
 }
 
-void plot_and_save_2x_1D(TH1F *h1, TH1F *h2, TString sss, string ss, int hv_,int sn_, int gst=0, bool log=false){
+void plot_and_save_2x_1D(TH1F *h1, TH1F *h2, TString sss, string ss, int hv_,int sn_, int gst=0, bool log=false, TString ssss=""){
         gStyle->SetOptStat(gst);
         TCanvas *c1 = new TCanvas("c1","The Ntuple canvas",200,10,780,780);
         TPad *pad1 = new TPad("pad1","This is pad1",0.05,0.05,0.98,0.55,21);
@@ -63,11 +66,14 @@ void plot_and_save_2x_1D(TH1F *h1, TH1F *h2, TString sss, string ss, int hv_,int
         c1->cd();
         c1->Update();
         TString s("");
-        s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.root",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        /*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.root",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+	if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.root",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
         c1->SaveAs(s);
-        s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        /*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.pdf",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
         c1->SaveAs(s);
-        s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.png",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        /*s.Form("ScanId_%d/HV%d/_HV_%d_SN_%d_%s%s.png",sn_,hv_,hv_,sn_,sss.Data(),ss.c_str());
+        if(plts_per_strip)*/ s.Form("ScanId_%d/HV%d/%s_HV_%d_SN_%d_%s%s.png",sn_,hv_,ssss.Data(),hv_,sn_,sss.Data(),ss.c_str());
         c1->SaveAs(s);
 
 }

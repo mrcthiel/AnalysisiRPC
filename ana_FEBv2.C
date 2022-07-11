@@ -24,6 +24,40 @@ void ana_FEBv2::Loop()
 	double time_min = 4000; //To avoid the edges of the bc0
 	double time_max = 87000; //To avoid the edges of the bc0
 
+	// for retrig study
+	s.Form("mkdir ScanId_%d/HV%d/plts_per_strip",sn_,hv_);
+        gSystem->Exec(s);
+        if(retrig_study){ 
+		s.Form("mkdir ScanId_%d/HV%d/retriggering_study",sn_,hv_);
+		gSystem->Exec(s);
+	}
+	std::vector<TH1F*> hLRT_V; 
+        std::vector<TH1F*> hHRT_V;
+        std::vector<TH1F*> hLRT_zoom_V;
+        std::vector<TH1F*> hHRT_zoom_V;
+        std::vector<TH1F*> hdeltaT_1D_V;
+
+        std::vector<TH1F*> hLRT_retrig_V;
+        std::vector<TH1F*> hHRT_retrig_V;
+
+	for (int i=0;i<48;i++){ 
+		TH1F *h1 = new TH1F(Form("hLRT_V_%d",i),"T (LR - Trig)",10000,-9000,1000); 
+		hLRT_V.push_back(h1); 
+                TH1F *h2 = new TH1F(Form("hHRT_V_%d",i),"T (HR - Trig)",10000,-9000,1000);
+                hHRT_V.push_back(h2);
+                TH1F *h3 = new TH1F(Form("hLRT_zoom_V_%d",i),"T (LR - Trig)",600,-2000,1000);
+                hLRT_zoom_V.push_back(h3);
+                TH1F *h4 = new TH1F(Form("hHRT_zoom_V_%d",i),"T (HR - Trig)",600,-2000,1000);
+                hHRT_zoom_V.push_back(h4);
+                TH1F *h5 = new TH1F(Form("deltaT_V_%d",i),"T (HR - LR)", 300, -30, 30);
+                hdeltaT_1D_V.push_back(h5);
+                TH1F *h6 = new TH1F(Form("hLRT_retrig_V_%d",i),"Tn = LRn - Trig; Tn-T1, n>1",150,0,150);
+                hLRT_retrig_V.push_back(h6);
+                TH1F *h7 = new TH1F(Form("hHRT_retrig_V_%d",i),"Tn = HRn - Trig; Tn-T1, n>1",150,0,150);
+                hHRT_retrig_V.push_back(h7);
+	}
+
+
 	// Get time calibration for a given ScanId
 	vector<vector<double>> time_corr_fine_vec;
 	time_corr_fine_vec.clear();
@@ -46,9 +80,9 @@ void ana_FEBv2::Loop()
 	LR_to_conctor_vec.clear();
 	vector<double> HR_to_conctor_vec;
 	HR_to_conctor_vec.clear();
-	HR_to_conctor_vec = Aligment_factor(sn_,1,2);
-	LR_to_conctor_vec = Aligment_factor(sn_,2,2);
-	Strip_length_vec = Aligment_factor(sn_,3,2);
+	HR_to_conctor_vec = Aligment_factor(sn_,1);
+	LR_to_conctor_vec = Aligment_factor(sn_,2);
+	Strip_length_vec = Aligment_factor(sn_,3);
 	double HR_to_conctor[48];
 	for(int ii=0;ii<HR_to_conctor_vec.size();ii++){
 		HR_to_conctor[ii] = HR_to_conctor_vec.at(ii);
@@ -90,17 +124,21 @@ void ana_FEBv2::Loop()
 	// Get the Muon Window
 	auto newtree = fChain->CloneTree();
 	vector<double> mu_wind_vec = MuonWindow(sn_, newtree, time_min, time_max, nentries, isFEBv2r2);
-	double muon_window_size = 40.;
+	double muon_window_size = 50.;
 	if(no_trig_case==true) muon_window_size = 1000.;
 	double muW1_HR = mu_wind_vec.at(1)-muon_window_size/2;
 	double muW2_HR = mu_wind_vec.at(1)+muon_window_size/2;
 	double muW1_LR = mu_wind_vec.at(0)-muon_window_size/2;
 	double muW2_LR = mu_wind_vec.at(0)+muon_window_size/2;
-	double muW1_bkg = muW1_HR-1000.;
-	double muW2_bkg = muW2_HR-1000.;
+	double muW1_bkg = muW1_HR-5000.;//muW1_HR-1000.
+	double muW2_bkg = muW2_HR-1000.;//muW2_HR-1000.
 	TH2F* hHRT = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
 	TH2F* hLRT = new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_LR-muW2_LR), muW1_LR, muW2_LR);
 
+        for (int strip_numb=0;strip_numb<48;strip_numb++){
+		hHRT_zoom_V.at(strip_numb)->GetXaxis()->SetRangeUser(mu_wind_vec.at(1)-150,mu_wind_vec.at(1)+150);
+		hLRT_zoom_V.at(strip_numb)->GetXaxis()->SetRangeUser(mu_wind_vec.at(0)-150,mu_wind_vec.at(0)+150);
+	}
 	run_duration_in_sec = 10*(abs(muW1_HR)-abs(muW2_HR))*pow(10,-9);
 
 	// Use it to print the final effs and cluster rate
@@ -128,11 +166,7 @@ void ana_FEBv2::Loop()
         double Y_align_n[48] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
         double dT_align[48] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
         double dT_align_n[48] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//        double Y_align_factor[48] = {34.5119,76.495,72.4714,78.7625,128.835,132.512,85.0249,31.0071,102.627,65.9558,73.441,65.4189,87.7693,73.0123,84.7136,67.063,0,83.8527,54.1452,57.2965,136.777,136.958,61.6389,80.2829,125.135,124.226,142.825,128.327,156.389,58.7709,114.581,140.605,150.407,127.332,171.906,193.249,125.997,136.218,206.176,200.295,176.068,241.033,226.945,215.575,230.945,213.202,196.946,183.853};
 
-        double Y_align_factor[48] = {38.0263,79.0385,76.0406,84.3025,136.791,137.119,90.0484,38.1663,106.995,68.2962,72.1717,65.2216,91.8498,79.6549,90.9139,71.5843,0,87.603,59.2821,59.4001,138.702,142.885,68.4777,85.3395,129.846,127.63,145.619,132.369,163.946,63.1836,119.826,145.166,156.684,134.537,179.186,196.337,131.947,143.551,208.459,205.077,181.591,247.037,233.232,220.436,236.671,218.817,204.194,192.004};
-
-        double dT_align_factor[48] = {1.62528,1.09566,1.12789,1.02194,0.348504,0.344317,0.948228,1.61381,0.731209,1.22794,1.17834,1.26704,0.925361,1.0831,0.937917,1.18672,2.10643,0.981501,1.34591,1.34473,0.324811,0.27107,1.229,1.01225,0.439263,0.467965,0.236236,0.407168,0,1.30108,0.569012,0.242675,0.0938157,0.38011,-0.197132,-0.419134,0.414141,0.264056,-0.576838,-0.533299,-0.229167,-1.0287,-0.809026,-0.597872,-0.761051,-0.590817,-0.430313,-0.294155};
 
 	for (int jj=0;jj<2;jj++){ // jj=0->on muon window; jj=1->out muon window
 		double sum_cluster_size = 0;
@@ -161,6 +195,7 @@ void ana_FEBv2::Loop()
 		int ClusterE = 0;
 
 		//start loop over all events
+                int retrig_rate = 0; //for retrig study
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
 			Long64_t ientry = LoadTree(jentry);
 			if (ientry < 0) break;
@@ -185,12 +220,16 @@ void ana_FEBv2::Loop()
 			//loop over all signals, no triggering, here we fill rate plots inportant at P5! here we also save the trigger info
 			int LR_ns=0;
 			int HR_ns=0;
-			int signals_trig=0;
 			int signals_notrig=0;
+
+
+        		double first_trig_HR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
+                        double first_trig_LR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
+
+
 			for (uint32_t i=0;i<nframe;i++){
 				if (m_channel(frame[i])==32) {
 					t_bc0[m_fpga(frame[i])]=m_time(m_traw(frame[i]));
-					signals_trig++;
 				}
 				else if (m_channel(frame[i])==33){
 					if (trig[m_fpga(frame[i])] != 0) bad_trig = 1; // prevents firing of one of the fpga's more than once
@@ -200,7 +239,6 @@ void ana_FEBv2::Loop()
 						ntrig_event++; // This value must reach 3 for all events.
 						trig_time = m_time(m_traw(frame[i])); //trig[m_fpga(frame[i])];trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]
 					}
-					signals_trig++;
 				} else if(m_channel(frame[i])!=32 && m_channel(frame[i])!=33){
 					std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i],side);
 					int strip_side = -9999;
@@ -271,8 +309,10 @@ void ana_FEBv2::Loop()
 			}
 			if(trig_time==-99999.) continue;
 			if (!(trig_exists && ntrig_event ==3) ) continue;
-			if (bad_trig) continue;
+			if (bad_trig) continue; //checar aqui
 
+			int retrig_rate_temp = 0; //for retrig study
+			
 			//loop over all events signals in the triggered event
 			for (uint32_t i=0;i<nframe;i++){
 				std::vector<int> strip_and_side = m_strip_FEBv2r2(frame[i],side);
@@ -301,9 +341,18 @@ void ana_FEBv2::Loop()
 
 						double LR_trig = time_in_strip_new + time_to_conector_new;
 						//std::cout << LR_trig << ";    " << calibrated_time << ";    " << trig_time << std::endl;
-						hLRT_->Fill(LR_trig); // Fill the signal - trig plot
-						hLRT_temp->Fill(LR_trig); // same but zoom
-						if(isFEBv2r2 && strip_numb==23)hLRT_strip23->Fill(LR_trig);;
+						if(jj==0) hLRT_->Fill(LR_trig); // Fill the signal - trig plot // checar se esta duplicado
+						if(jj==0) hLRT_temp->Fill(LR_trig); // same but zoom
+						if(jj==0) hLRT_V.at(strip_numb)->Fill(LR_trig);
+                                                if(jj==0) hLRT_zoom_V.at(strip_numb)->Fill(LR_trig);
+						if(isFEBv2r2 && strip_numb==23)hLRT_strip23->Fill(LR_trig);
+                                                if(jj==0 && retrig_study){
+                                                        if(first_trig_LR[strip_numb]==10000.) {first_trig_LR[strip_numb] = LR_trig;} else {
+                                                                hLRT_retrig_V.at(strip_numb)->Fill(LR_trig-first_trig_LR[strip_numb]);
+								retrig_rate_temp++;
+                                                        }
+
+                                                }
 						// add signal to the strip struct
 						if(isFEBv2r2) {
 							allStrips[strip_numb].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
@@ -327,9 +376,18 @@ void ana_FEBv2::Loop()
 							time_to_conector_new = HR_to_conctor[m_strip(frame[i])]/V_conector-HR_to_conctor[reference_strip]/V_conector;
 						}
 						double HR_trig = time_in_strip_new + time_to_conector_new;
-						hHRT_->Fill(HR_trig); // Fill the signal - trig plot
-						hHRT_temp->Fill(HR_trig); // same but zoom
+						if(jj==0) hHRT_->Fill(HR_trig); // Fill the signal - trig plot
+						if(jj==0) hHRT_temp->Fill(HR_trig); // same but zoom // checar
+                                                if(jj==0) hHRT_V.at(strip_numb)->Fill(HR_trig);
+                                                if(jj==0) hHRT_zoom_V.at(strip_numb)->Fill(HR_trig);
 						if(isFEBv2r2 && strip_numb==23)hHRT_strip23->Fill(HR_trig);
+						if(jj==0 && retrig_study){
+							if(first_trig_HR[strip_numb]==10000.) {first_trig_HR[strip_numb] = HR_trig;} else {
+								hHRT_retrig_V.at(strip_numb)->Fill(HR_trig-first_trig_HR[strip_numb]);
+								retrig_rate_temp++;
+							}
+				
+						} 
 						// add signal to the strip struct
 						if(isFEBv2r2) {
 							allStrips[strip_numb].addHRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
@@ -339,6 +397,7 @@ void ana_FEBv2::Loop()
 					}
 				}
 			} // end of first frame loop
+			if(retrig_rate_temp>0 && retrig_study) retrig_rate++;
 
 			int ntriggerHR_signal_strip = 0;
 			int ntriggerLR_signal_strip = 0;
@@ -426,9 +485,11 @@ void ana_FEBv2::Loop()
 					deltaT=deltaT/2.;//-i*0.3+7;//0.15 2
 					if(deltaT>0) n_paired_srip_med++;
 
-					vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2+dT_align_factor[i]));//0.3 7.
-					if(align_XY && X_Y.at(1)>-200 && X_Y.at(1)<1500 && jj==1){
-						Y_align[i] = Y_align[i]+X_Y.at(1);
+					vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2-dT_align_factor[i]));//0.3 7.
+                                        vector<double> X_Y_forAlign = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2));
+					//std::cout << "test" << std::endl;
+					if(align_XY && X_Y_forAlign.at(1)>-200 && X_Y_forAlign.at(1)<1500 && jj==1){
+						Y_align[i] = Y_align[i]+X_Y_forAlign.at(1);
                                                 Y_align_n[i] = Y_align_n[i]+1;
 						dT_align[i] = dT_align[i]+(time_in_strip-time_in_strip2);
 						dT_align_n[i] = dT_align_n[i]+1;
@@ -444,6 +505,7 @@ void ana_FEBv2::Loop()
 					hdeltaT->Fill(i,deltaT);
 					hsumT->Fill(i,sumT);
 					hdeltaT_1D->Fill(deltaT);
+					if(jj==0) hdeltaT_1D_V.at(i)->Fill(time_in_strip-time_in_strip2/*deltaT*/);
 					hsumT_1D->Fill(sumT);
 				}
 			} // strip loop ends
@@ -534,6 +596,10 @@ void ana_FEBv2::Loop()
 			}
 			hnPairs->Fill(n_paired_srip);
 		} //Event loop ends
+                std::cout << "===================================================================================" << std::endl;
+		if(jj==0 && retrig_study) std::cout << "RETRIG RATE: " << (double)retrig_rate/(double)ntrig_allevent << std::endl;
+                if(jj==0 && retrig_study) std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
+                std::cout << "===================================================================================" << std::endl;
 
 		hHRT_temp->GetXaxis()->SetRangeUser(hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())-50,hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())+50);
 		hLRT_temp->GetXaxis()->SetRangeUser(hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())-50,hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())+50);
@@ -567,7 +633,7 @@ void ana_FEBv2::Loop()
 			HR_eff_out = (nANDstripHR_noCut_fired)/float(ntrig_allevent);
 			LR_eff_out = (nANDstripLR_noCut_fired)/float(ntrig_allevent);
 			cluster_eff_out = (N_cluster_good)/float(ntrig_allevent);
-			cluster_rate_out = sum_cluster_size/(ntrig_allevent*muon_window_size*pow(10,-9)*6000);
+			cluster_rate_out = sum_cluster_size/(ntrig_allevent*muon_window_size*pow(10,-9)*active_area);
 		}
 
 		if(no_trig_case==true) and_eff_out = 0.;
@@ -706,6 +772,26 @@ void ana_FEBv2::Loop()
 
 			plot_and_save_2x_1D(hLRT_strip23, hHRT_strip23, sss, "DeltaTrig_side_forTimeWindow_strip23", hv_,sn_, 0);
 
+			if(jj==0){
+				for (int i=0;i<48;i++){
+					plot_and_save_2x_1D(hLRT_V.at(i), hHRT_V.at(i), sss, Form("DeltaTrig_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
+                	                plot_and_save_2x_1D(hLRT_zoom_V.at(i), hHRT_zoom_V.at(i), sss, Form("DeltaTrig_zoom_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
+                        		hdeltaT_1D_V.at(i)->GetXaxis()->SetTitle(Form("delta time [ns] strip%d",i));
+                	        	hdeltaT_1D_V.at(i)->GetYaxis()->SetTitle("Events");
+        	       			hdeltaT_1D_V.at(i)->SetTitle("");
+	                        	plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "plts_per_strip/");
+                        		//for retrig study
+					if(retrig_study) plot_and_save_2x_1D(hLRT_retrig_V.at(i), hHRT_retrig_V.at(i), sss, Form("DeltaTrig_retrig_1d_strip%d",i), hv_,sn_, 0, false, "retriggering_study/");
+//                                        plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "retriggering_study/");
+					if(i!=0 && retrig_study) hLRT_retrig_V.at(0)->Add(hLRT_retrig_V.at(i));
+                                        if(i!=0 && retrig_study) hHRT_retrig_V.at(0)->Add(hHRT_retrig_V.at(i));
+				}
+				if(retrig_study) plot_and_save_1D(hLRT_retrig_V.at(0), sss, Form("deltaT_1D_LR"), hv_, sn_, 0, "retriggering_study/");
+                                if(retrig_study) plot_and_save_1D(hHRT_retrig_V.at(0), sss, Form("deltaT_1D_HR"), hv_, sn_, 0, "retriggering_study/");
+				if(retrig_study) hLRT_retrig_V.at(0)->Add(hHRT_retrig_V.at(0));
+				if(retrig_study) plot_and_save_1D(hLRT_retrig_V.at(0), sss, Form("deltaT_1D_ALL"), hv_, sn_, 0, "retriggering_study/");
+			}
+
 			//plot_and_save_1D(hbc0, sss, "hbc0", hv_, sn_);
 
 			if(jj==0) hHRn_gamma_AND = hLHRn->Integral()/48.;
@@ -732,9 +818,28 @@ void ana_FEBv2::Loop()
 
 	myfile.close();
 
+	
+
 	//for Y aligment
 	if(align_XY){
-		int best_strip = 0;
+                for(int i = 0; i<48; i++){
+			std::cout << "-->> " << i << std::endl;
+			std::cout << hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindFirstBinAbove(20))  << ";  " <<hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindLastBinAbove(20)) << std::endl;
+                        std::cout << 0.5*(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindLastBinAbove(20))-hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindFirstBinAbove(20)))*V_conector << "; " << Strip_length[i] << "  -->> " <<  (0.5*(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindLastBinAbove(20))-hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindFirstBinAbove(20)))*V_conector-Strip_length[i])  << std::endl;
+//        	        std::cout << std::endl;
+//	                std::cout << "=============================" << std::endl;
+//			std::cout << (abs(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindLastBinAbove(20)))-abs(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindFirstBinAbove(20))))/2  << ",";
+//                	std::cout << std::endl;
+//                	std::cout << "=============================" << std::endl;
+		}
+                std::cout << "=============================" << std::endl;
+                for(int i = 0; i<48; i++){
+                        std::cout << (abs(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindLastBinAbove(20)))-abs(hdeltaT_1D_V.at(i)->GetXaxis()->GetBinCenter(hdeltaT_1D_V.at(i)->FindFirstBinAbove(20))))/2  << ",";
+                }
+                std::cout << std::endl;
+                std::cout << "=============================" << std::endl;
+
+/*		int best_strip = 0;
 		double best_strip_diff = abs(Y_align[0]/Y_align_n[0]-Strip_length[0]);
 		for(int i = 0; i<48; i++){
 			std::cout << "Y_align[i]/Y_align_n[i]: " << Y_align[i]/Y_align_n[i] << ";  Y_align_n[i]: " << Y_align_n[i] << std::endl; 
@@ -761,7 +866,7 @@ void ana_FEBv2::Loop()
                         std::cout << (dT_align[best_strip]/dT_align_n[best_strip]-dT_align[i]/dT_align_n[i])  << ",";
                 }
                 std::cout << std::endl;
-	}
+*/	}
 	//for clustering study
 	if(plot_clust_par){
 		gStyle->SetOptFit(1111);

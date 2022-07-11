@@ -1,9 +1,12 @@
 #ifndef CalibAlig_h
 #define CalibAlig_h
 using namespace std;
-double V_conector = 299.792*0.52;//0.6;// mm/ns  - check it
+double V_conector = 299.792*0.568;//0.6;// mm/ns  - check it
 
-double dT_align_factor[48] = {1.62528,1.09566,1.12789,1.02194,0.348504,0.344317,0.948228,1.61381,0.731209,1.22794,1.17834,1.26704,0.925361,1.0831,0.937917,1.18672,2.10643,0.981501,1.34591,1.34473,0.324811,0.27107,1.229,1.01225,0.439263,0.467965,0.236236,0.407168,0,1.30108,0.569012,0.242675,0.0938157,0.38011,-0.197132,-0.419134,0.414141,0.264056,-0.576838,-0.533299,-0.229167,-1.0287,-0.809026,-0.597872,-0.761051,-0.590817,-0.430313,-0.294155};
+
+//double dT_align_factor[48] = {-2.1,-1.8,-1.8,-1.7,-1,-0.7,-1.3,-2.1,-1.1,-1.3,-1.2,-1.5,-0.9,-0.9,-0.9,-1.2,-2.3,-1.2,-1.8,-1.6,-0.6,-0.6,-1.7,-1.4,-0.7,-0.8,-0.5,-0.7,-0.4,-1.7,-1,-0.5,-0.7,-1.1,-0.5,1.77636e-15,-0.9,-1.1,1.77636e-15,-0.2,-0.6,1.77636e-15,-0.2,-0.1,-0.1,-0.3,-0.5,-0.5}; // FEB 18
+
+double dT_align_factor[48] = {1.4452101,0.2510079,-2.1902906,-1.0350013,-2.3004323,-1.2543835,-1.1045248,-1.8913465,-1.3490264,-1.5449105,-1.8372529,-1.8103156,-1.1841784,-1.0979515,-1.6945748,-0.4591224,0.6512728,-1.1192362,-2.0161506,-0.901047,-2.0043698,-0.9449287,-1.73625,-0.7111754,-1.8360712,-1.9396871,-1.0448232,-0.7418527,-1.5899563,-1.7241831,-1.4810002,-1.0291577,1.9061805,0.242481,-1.5798211,-1.2304393,-0.8534959,-0.5199035,-0.9613746,-0.4390178,-1.3907389,-1.4581697,-0.812486,-0.010505,-1.064601,-1.062432,-0.955401,-0.7823796}; // FEB 13
 
 vector<int> Feb_Chamber(int sn_){
 
@@ -30,16 +33,21 @@ vector<int> Feb_Chamber(int sn_){
 	if(sn_==261) {feb_=6; chamber_=31;}
         if(sn_==274||sn_==277) {feb_=10; chamber_=31;}
 	if(sn_==289||sn_==285||sn_==291)  {feb_=5; chamber_=31;}
-        if(sn_==644||sn_==681||sn_==682||sn_==691||sn_==695||sn_==697)  {feb_=12; chamber_=31; side_=2;}
+        if(sn_==644||sn_==681||sn_==682||sn_==691||sn_==695||sn_==697||sn_==3118712||sn_==311871205)  {feb_=12; chamber_=31; side_=2;}
 	if(sn_==650||sn_==651||sn_==655||sn_==657||sn_==654||sn_==658||sn_==656||sn_==660||sn_==661||sn_==667||sn_==668||sn_==669||sn_==671||sn_==704) {feb_=11; chamber_=31;}
         if(sn_==293||sn_==296||sn_==297||sn_==298||sn_==299)  {feb_=14; chamber_=31;}
         if(sn_==294||sn_==295|sn_==311)  {feb_=17; chamber_=31;} 
 	if(sn_==714||sn_==718||sn_==711||sn_==736||sn_==737||sn_==738)  {feb_=18; chamber_=31;}
-	if(sn_>755&&sn_<782)  {feb_=18; chamber_=41;}
+	if(sn_>755&&sn_<782)  {feb_=18; chamber_=41;  side_=2;}
         if(sn_==357)  {feb_=18; chamber_=31;}
 	if(sn_>798&&sn_<815) {feb_=18; chamber_=31;}
         if(sn_>815) {feb_=18; chamber_=41;}
-        if(sn_==703||sn_==704||sn_==705) {feb_=11; chamber_=31; side_=1;}
+        if(sn_==703||sn_==704||sn_==705||sn_==3118711||sn_==311871105) {feb_=11; chamber_=31; side_=1;}
+	if(sn_>847) {feb_=18; chamber_=41; side_=2;}
+        if(sn_>937) {feb_=18; chamber_=41; side_=2;}
+        if(sn_>1030) {feb_=13; chamber_=31; side_=1;}
+        if(sn_==382 || sn_==384) {feb_=18; chamber_=41; side_=2;}//feb19
+	if(sn_==388) {feb_=18; chamber_=31; side_=2;}//feb19
 
 // ADD HERE NEW SACN_ID AND IT FEB AND CHAMBER NUMBERS
 // EXAMPLE:
@@ -143,6 +151,14 @@ vector<vector<double> > time_corr_fine_func(int sn_){
 		{12.9734,11.9734,12.9734,14.9734,11.9734,14.9754,11.9734,10.9734,10.9734,12.9734,13.9734,13.9734,16.9734,13.1766,14.9734,15.9734,15.9734,17.968,19.9734,14.9734,17.9734,15.9734,13.3384,14.7247,14.2018,15.8798,19.9734,17.9734,13.9734,12.9734,13.9734,16.3132}
 	};
 
+        double  time_corr_fine_17[3][32] = {
+                {12.,11.9449,12.9438,14.9438,12.9517,15.9438,11.9438,10.9438,11.9429,12.9438,13.9438,14.7864,16.9438,13.9438,14.9567,15.9567,19.,19.4262,19.9438,14.9438,18.0021,15.9438,13.9397,14.9438,14.9437,15.9438,19.9438,17.9519,14.817,13.8446,13.9438,16.9436},
+                {12.,12.0753,12.9438,14.9438,11.9438,15.4891,11.9438,10.9438,10.9438,12.9438,13.9438,14.9285,16.9438,13.9438,14.9438,15.9438,18.,17.9631,19.9438,14.9438,17.9438,15.9438,12.9438,14.8948,14.2326,14.9387,19.9438,17.9438,13.9438,12.9438,13.9438,16.0198},
+                {12.,12.,12.9438,14.9438,11.9705,15.9438,11.9438,10.9438,11.3004,12.9438,13.9438,14.0256,16.9438,13.894,14.9438,15.957,19.,19.,19.9438,14.2395,17.9438,15.9437,13.1296,14.9425,14.3038,14.9827,19.9164,17.9438,13.9522,12.9438,13.9438,15.9439}
+/*                {58.2027,11.9449,12.9438,14.9438,12.9517,15.9438,11.9438,10.9438,11.9429,12.9438,13.9438,14.7864,16.9438,13.9438,14.9567,15.9567,63.5406,19.4262,19.9438,14.9438,18.0021,15.9438,13.9397,14.9438,14.9437,15.9438,19.9438,17.9519,14.817,13.8446,13.9438,16.9436},
+                {51.2011,12.0753,12.9438,14.9438,11.9438,15.4891,11.9438,10.9438,10.9438,12.9438,13.9438,14.9285,16.9438,13.9438,14.9438,15.9438,63.3532,17.9631,19.9438,14.9438,17.9438,15.9438,12.9438,14.8948,14.2326,14.9387,19.9438,17.9438,13.9438,12.9438,13.9438,16.0198},
+                {60.4373,22.9782,12.9438,14.9438,11.9705,15.9438,11.9438,10.9438,11.3004,12.9438,13.9438,14.0256,16.9438,13.894,14.9438,15.957,63.1069,36.9496,19.9438,14.2395,17.9438,15.9437,13.1296,14.9425,14.3038,14.9827,19.9164,17.9438,13.9522,12.9438,13.9438,15.9439}
+*/        };
 
 // ADD HERE THE TIME CALIBRATION VALUES IF YOU NEW SACN_ID DO NOT HAVE IT YET.
 
@@ -166,6 +182,7 @@ vector<vector<double> > time_corr_fine_func(int sn_){
         if(feb_==14) memcpy(time_corr_fine, time_corr_fine_14, sizeof(time_corr_fine));
         if(feb_==17) memcpy(time_corr_fine, time_corr_fine_15, sizeof(time_corr_fine));
         if(feb_==18) memcpy(time_corr_fine, time_corr_fine_16, sizeof(time_corr_fine));
+        if(feb_==13) memcpy(time_corr_fine, time_corr_fine_17, sizeof(time_corr_fine));
 // ASSOCIATE HERE THE TIME CALIBRATION VECTOR WITH SCAN_ID/FEB NUMBERS
 
 
@@ -196,13 +213,13 @@ vector<vector<double> > time_corr_fine_func(int sn_){
 }
 
 
-vector<double> Aligment_factor(int sn_, int dist, int side){
+vector<double> Aligment_factor(int sn_, int dist){
 // dist =1,2,3 = HR_to_conector,LR_to_conector,Strip_length
 // side =1,2 = G,R
 
         vector<int> Feb_Chamber_vec = Feb_Chamber(sn_);
         int chamber = Feb_Chamber_vec.at(1);
-
+        int side = Feb_Chamber_vec.at(2);
 
         vector<double> HR_to_conector_RE31_G{89.54,79.41, 69.29,59.17, 49.07,39.9, 35.71,31.52, 31.17,35.36,39.55,48.2, 58.32,68.43,78.55,88.66, 56.09,66.2,76.32,86.43, 96.55,106.67,116.78,126.9, 137.01,147.12,157.24,167.36, 177.47,187.59,197.7, 207.82, 175.12,185.38,195.48,205.6, 215.85,225.83,235.95,246.07, 256.18,266.3,276.67,286.53, 301.56,314.65,328.49,342.22}; 
         vector<double> LR_to_conector_RE31_G{2314.41,2304.93,2295.47,2286.0, 2276.53,2267.07,2257.61,2248.13, 2238.67,2229.2,2219.73,2210.27, 2200.79,2191.33,2181.88,2172.39, 2120.25,2110.78,2101.32,2091.85,2082.38,2072.92,2063.44,2053.98, 2044.52,2035.05,2025.58,2016.12,2006.65,1997.18,1987.72,1978.24, 1926.1,1916.63,1907.16,1897.7, 1888.23,1878.77,1869.3,1855.76, 1844.2,1832.12,1819.98,1807.77,1795.51,1783.16,1770.75,1757.01};
@@ -244,7 +261,7 @@ double strip_coordinates(int CH, int XY, int BT, int zeroone, int side, int stri
 //XY=0,1 => x,y
 //BT=0,1 => B,T
 //zeroone=0,1
-//side=0,1 => G,R
+//side=1,2 => G,R
 
 	double temp = -999.;
 
@@ -281,38 +298,38 @@ double strip_coordinates(int CH, int XY, int BT, int zeroone, int side, int stri
   	vector<double> YT0_RE41_R{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,21,32};  
 	vector<double> YT1_RE41_R{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21,32,43};
 
-	if(CH==31 && XY==0 && BT==0 && zeroone==0 && side==0) temp = XB0_RE31_G.at(strip);
-        if(CH==31 && XY==0 && BT==0 && zeroone==1 && side==0) temp = XB1_RE31_G.at(strip);
-        if(CH==31 && XY==0 && BT==1 && zeroone==0 && side==0) temp = XT0_RE31_G.at(strip);
-        if(CH==31 && XY==0 && BT==1 && zeroone==1 && side==0) temp = XT1_RE31_G.at(strip);
-        if(CH==31 && XY==1 && BT==0 && zeroone==0 && side==0) temp = YB0_RE31_G.at(strip);
-        if(CH==31 && XY==1 && BT==0 && zeroone==1 && side==0) temp = YB1_RE31_G.at(strip);
-        if(CH==31 && XY==1 && BT==1 && zeroone==0 && side==0) temp = YT0_RE31_G.at(strip);
-        if(CH==31 && XY==1 && BT==1 && zeroone==1 && side==0) temp = YT1_RE31_G.at(strip);
-        if(CH==31 && XY==0 && BT==0 && zeroone==0 && side==1) temp = XB0_RE31_R.at(strip);
-        if(CH==31 && XY==0 && BT==0 && zeroone==1 && side==1) temp = XB1_RE31_R.at(strip);
-        if(CH==31 && XY==0 && BT==1 && zeroone==0 && side==1) temp = XT0_RE31_R.at(strip);
-        if(CH==31 && XY==0 && BT==1 && zeroone==1 && side==1) temp = XT1_RE31_R.at(strip);
-        if(CH==31 && XY==1 && BT==0 && zeroone==0 && side==1) temp = YB0_RE31_R.at(strip);
-        if(CH==31 && XY==1 && BT==0 && zeroone==1 && side==1) temp = YB1_RE31_R.at(strip);
-        if(CH==31 && XY==1 && BT==1 && zeroone==0 && side==1) temp = YT0_RE31_R.at(strip);
-        if(CH==31 && XY==1 && BT==1 && zeroone==1 && side==1) temp = YT1_RE31_R.at(strip);
-        if(CH==41 && XY==0 && BT==0 && zeroone==0 && side==0) temp = XB0_RE41_G.at(strip);
-        if(CH==41 && XY==0 && BT==0 && zeroone==1 && side==0) temp = XB1_RE41_G.at(strip);
-        if(CH==41 && XY==0 && BT==1 && zeroone==0 && side==0) temp = XT0_RE41_G.at(strip);
-        if(CH==41 && XY==0 && BT==1 && zeroone==1 && side==0) temp = XT1_RE41_G.at(strip);
-        if(CH==41 && XY==1 && BT==0 && zeroone==0 && side==0) temp = YB0_RE41_G.at(strip);
-        if(CH==41 && XY==1 && BT==0 && zeroone==1 && side==0) temp = YB1_RE41_G.at(strip);
-        if(CH==41 && XY==1 && BT==1 && zeroone==0 && side==0) temp = YT0_RE41_G.at(strip);
-        if(CH==41 && XY==1 && BT==1 && zeroone==1 && side==0) temp = YT1_RE41_G.at(strip);
-        if(CH==41 && XY==0 && BT==0 && zeroone==0 && side==1) temp = XB0_RE41_R.at(strip);
-        if(CH==41 && XY==0 && BT==0 && zeroone==1 && side==1) temp = XB1_RE41_R.at(strip);
-        if(CH==41 && XY==0 && BT==1 && zeroone==0 && side==1) temp = XT0_RE41_R.at(strip);
-        if(CH==41 && XY==0 && BT==1 && zeroone==1 && side==1) temp = XT1_RE41_R.at(strip);
-        if(CH==41 && XY==1 && BT==0 && zeroone==0 && side==1) temp = YB0_RE41_R.at(strip);
-        if(CH==41 && XY==1 && BT==0 && zeroone==1 && side==1) temp = YB1_RE41_R.at(strip);
-        if(CH==41 && XY==1 && BT==1 && zeroone==0 && side==1) temp = YT0_RE41_R.at(strip);
-        if(CH==41 && XY==1 && BT==1 && zeroone==1 && side==1) temp = YT1_RE41_R.at(strip);
+	if(CH==31 && XY==0 && BT==0 && zeroone==0 && side==1) temp = XB0_RE31_G.at(strip);
+        if(CH==31 && XY==0 && BT==0 && zeroone==1 && side==1) temp = XB1_RE31_G.at(strip);
+        if(CH==31 && XY==0 && BT==1 && zeroone==0 && side==1) temp = XT0_RE31_G.at(strip);
+        if(CH==31 && XY==0 && BT==1 && zeroone==1 && side==1) temp = XT1_RE31_G.at(strip);
+        if(CH==31 && XY==1 && BT==0 && zeroone==0 && side==1) temp = YB0_RE31_G.at(strip);
+        if(CH==31 && XY==1 && BT==0 && zeroone==1 && side==1) temp = YB1_RE31_G.at(strip);
+        if(CH==31 && XY==1 && BT==1 && zeroone==0 && side==1) temp = YT0_RE31_G.at(strip);
+        if(CH==31 && XY==1 && BT==1 && zeroone==1 && side==1) temp = YT1_RE31_G.at(strip);
+        if(CH==31 && XY==0 && BT==0 && zeroone==0 && side==2) temp = XB0_RE31_R.at(strip);
+        if(CH==31 && XY==0 && BT==0 && zeroone==1 && side==2) temp = XB1_RE31_R.at(strip);
+        if(CH==31 && XY==0 && BT==1 && zeroone==0 && side==2) temp = XT0_RE31_R.at(strip);
+        if(CH==31 && XY==0 && BT==1 && zeroone==1 && side==2) temp = XT1_RE31_R.at(strip);
+        if(CH==31 && XY==1 && BT==0 && zeroone==0 && side==2) temp = YB0_RE31_R.at(strip);
+        if(CH==31 && XY==1 && BT==0 && zeroone==1 && side==2) temp = YB1_RE31_R.at(strip);
+        if(CH==31 && XY==1 && BT==1 && zeroone==0 && side==2) temp = YT0_RE31_R.at(strip);
+        if(CH==31 && XY==1 && BT==1 && zeroone==1 && side==2) temp = YT1_RE31_R.at(strip);
+        if(CH==41 && XY==0 && BT==0 && zeroone==0 && side==1) temp = XB0_RE41_G.at(strip);
+        if(CH==41 && XY==0 && BT==0 && zeroone==1 && side==1) temp = XB1_RE41_G.at(strip);
+        if(CH==41 && XY==0 && BT==1 && zeroone==0 && side==1) temp = XT0_RE41_G.at(strip);
+        if(CH==41 && XY==0 && BT==1 && zeroone==1 && side==1) temp = XT1_RE41_G.at(strip);
+        if(CH==41 && XY==1 && BT==0 && zeroone==0 && side==1) temp = YB0_RE41_G.at(strip);
+        if(CH==41 && XY==1 && BT==0 && zeroone==1 && side==1) temp = YB1_RE41_G.at(strip);
+        if(CH==41 && XY==1 && BT==1 && zeroone==0 && side==1) temp = YT0_RE41_G.at(strip);
+        if(CH==41 && XY==1 && BT==1 && zeroone==1 && side==1) temp = YT1_RE41_G.at(strip);
+        if(CH==41 && XY==0 && BT==0 && zeroone==0 && side==2) temp = XB0_RE41_R.at(strip);
+        if(CH==41 && XY==0 && BT==0 && zeroone==1 && side==2) temp = XB1_RE41_R.at(strip);
+        if(CH==41 && XY==0 && BT==1 && zeroone==0 && side==2) temp = XT0_RE41_R.at(strip);
+        if(CH==41 && XY==0 && BT==1 && zeroone==1 && side==2) temp = XT1_RE41_R.at(strip);
+        if(CH==41 && XY==1 && BT==0 && zeroone==0 && side==2) temp = YB0_RE41_R.at(strip);
+        if(CH==41 && XY==1 && BT==0 && zeroone==1 && side==2) temp = YB1_RE41_R.at(strip);
+        if(CH==41 && XY==1 && BT==1 && zeroone==0 && side==2) temp = YT0_RE41_R.at(strip);
+        if(CH==41 && XY==1 && BT==1 && zeroone==1 && side==2) temp = YT1_RE41_R.at(strip);
 
 	return temp;
 }
@@ -321,21 +338,21 @@ double strip_coordinates(int CH, int XY, int BT, int zeroone, int side, int stri
 vector<double> convert_DeltaTAndStrip_To_XY(int sn_, double strip_d, double deltaT){
         vector<int> Feb_Chamber_vec = Feb_Chamber(sn_);
         int chamber = Feb_Chamber_vec.at(1);
-
+	int side = Feb_Chamber_vec.at(2);
 	double strip_res = strip_d-(int)strip_d;
 	int strip = (int)strip_d;
 
 	if(strip_res>0.5) strip++;
 
 	//strip_coordinates(int CH, int XY, int BT, int zeroone, int side){
-	double X0B = strip_coordinates(chamber, 0, 0, 0, 0, strip);
-        double X1B = strip_coordinates(chamber, 0, 0, 1, 0, strip);
-        double X0T = strip_coordinates(chamber, 0, 1, 0, 0, strip);
-        double X1T = strip_coordinates(chamber, 0, 1, 1, 0, strip);
-        double Y0B = strip_coordinates(chamber, 1, 0, 0, 0, strip);
-        double Y1B = strip_coordinates(chamber, 1, 0, 1, 0, strip);
-        double Y0T = strip_coordinates(chamber, 1, 1, 0, 0, strip);
-        double Y1T = strip_coordinates(chamber, 1, 1, 1, 0, strip);
+	double X0B = strip_coordinates(chamber, 0, 0, 0, side, strip);
+        double X1B = strip_coordinates(chamber, 0, 0, 1, side, strip);
+        double X0T = strip_coordinates(chamber, 0, 1, 0, side, strip);
+        double X1T = strip_coordinates(chamber, 0, 1, 1, side, strip);
+        double Y0B = strip_coordinates(chamber, 1, 0, 0, side, strip);
+        double Y1B = strip_coordinates(chamber, 1, 0, 1, side, strip);
+        double Y0T = strip_coordinates(chamber, 1, 1, 0, side, strip);
+        double Y1T = strip_coordinates(chamber, 1, 1, 1, side, strip);
 
 	double XB = X0B+(X1B-X0B)/2;
         double XT = X0T+(X1T-X0T)/2;
@@ -351,7 +368,7 @@ vector<double> convert_DeltaTAndStrip_To_XY(int sn_, double strip_d, double delt
                 XT=XT-((XT-X0T)/(0.5))*(1.-strip_res);
 	}
 
-        vector<double> Strip_length_vec = Aligment_factor(sn_,3,1);
+        vector<double> Strip_length_vec = Aligment_factor(sn_,3);
 	double L = Strip_length_vec.at(strip);
 	double l_ = 0.5*(V_conector*deltaT) + L/2;
 

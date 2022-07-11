@@ -58,9 +58,9 @@ std::vector<double>  MuonWindow(int sn_, TTree *fChain, double time_min, double 
         vector<double> HR_to_conctor_vec;
         HR_to_conctor_vec.clear();
 
-        HR_to_conctor_vec = Aligment_factor(sn_,1,1);
-        LR_to_conctor_vec = Aligment_factor(sn_,2,1);
-        Strip_length_vec = Aligment_factor(sn_,3,1);
+        HR_to_conctor_vec = Aligment_factor(sn_,1);
+        LR_to_conctor_vec = Aligment_factor(sn_,2);
+        Strip_length_vec = Aligment_factor(sn_,3);
 
         double HR_to_conctor[48];
         for(int ii=0;ii<HR_to_conctor_vec.size();ii++){
@@ -79,7 +79,7 @@ std::vector<double>  MuonWindow(int sn_, TTree *fChain, double time_min, double 
         for(int iref = 1; iref < 48; iref++){
                 if(Strip_length[iref] < Strip_length[reference_strip]) reference_strip = iref;
         }
-        double V_conector = 299.792*0.6;// mm/ns  - check it
+        double V_conector = 299.792*0.568;// mm/ns  - check it
 
 
 	TH1F* hLRT_temp = new TH1F("hLRT_muon_window","T (LR - Trig)" ,10000,-9000,1000);

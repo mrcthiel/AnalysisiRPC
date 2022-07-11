@@ -96,7 +96,7 @@ struct cluster{
 		for(int i=0;i<strip_HR_v.size();i++){
 			for(int j=0;j<strip_LR_v.size();j++){
 				if(strip_LR_v.at(j)==strip_HR_v.at(i)){
-                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)+dT_align_factor[strip_LR_v.at(j)]));
+                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)-dT_align_factor[strip_LR_v.at(j)]));
 					x = x + X_Y.at(0);
 					n = n + 1;
 				}
@@ -113,7 +113,7 @@ struct cluster{
                 for(int i=0;i<strip_HR_v.size();i++){
                         for(int j=0;j<strip_LR_v.size();j++){
                                 if(strip_LR_v.at(j)==strip_HR_v.at(i)){
-                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)+dT_align_factor[strip_LR_v.at(j)]));
+                                        vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,strip_HR_v.at(i),(time_HR_v.at(i)-time_LR_v.at(j)-dT_align_factor[strip_LR_v.at(j)]));
                                         y = y + X_Y.at(1);
                                         n = n + 1;
                                 }
