@@ -2,31 +2,39 @@
 #include<stdio.h>
 
 
-void eff_curve_rate(int sn, int count, ...){
+void eff_curve_718(int sn, int count, ...){
 
 	std::vector<char *> wp;
-	wp.push_back("OR");
-	wp.push_back("AND");
-	wp.push_back("HR");
-	wp.push_back("LR");
-	wp.push_back("Cluster");
+	wp.push_back("Or");
+	wp.push_back("And");
+	wp.push_back("medium");
+	wp.push_back("tight");
+	wp.push_back("hr");
+	wp.push_back("lr");
+        wp.push_back("cluster");
+        wp.push_back("cluster2");
+
 
 
 	std::vector<double> HVs;
-	std::vector<float> effnocut_on, effloose_on, effhr_on, efflr_on, effnocut_out, effloose_out, effhr_out, efflr_out, effcluster_on, effcluster_out, gamma_cluster_rate;
-
+	std::vector<float> effnocut_on, effloose_on, effmedium_on, efftight_on, effhr_on, efflr_on, effnocut_out, effloose_out, effmedium_out, efftight_out, effhr_out, efflr_out, effcluster_on, effcluster_out, effcluster2_on, effcluster2_out;
 	HVs.clear();
 	effnocut_on.clear();
 	effloose_on.clear();
+	effmedium_on.clear();
+	efftight_on.clear();
 	effhr_on.clear();
 	efflr_on.clear();
 	effnocut_out.clear();
 	effloose_out.clear();
+	effmedium_out.clear();
+	efftight_out.clear();
 	effhr_out.clear();
 	efflr_out.clear();
-	effcluster_on.clear();
-	effcluster_out.clear();
-	gamma_cluster_rate.clear();
+        effcluster_on.clear();
+        effcluster_out.clear();
+        effcluster2_on.clear();
+        effcluster2_out.clear();
 
 	va_list list;
 	va_start(list, count);
@@ -44,7 +52,6 @@ void eff_curve_rate(int sn, int count, ...){
 		Int_t ncols;
 		float effnocuton, efflooseon, effmediumon, efftighton, effhron, efflron, effclusteron, effcluster2on;
 		float effnocutout, efflooseout, effmediumout, efftightout, effhrout, efflrout, effclusterout, effcluster2out;
-		float gammaclusterrate;
 		float temp;
 
 		ncols=0;
@@ -54,70 +61,101 @@ void eff_curve_rate(int sn, int count, ...){
 		ncols=fscanf(fp,"%f", &efflooseon);
 		effloose_on.push_back(efflooseon);
 		ncols=2;
+		ncols=fscanf(fp,"%f", &effmediumon);
+		effmedium_on.push_back(effmediumon);
+		ncols=3;
+		ncols=fscanf(fp,"%f", &efftighton);
+		efftight_on.push_back(efftighton);
+		ncols=4;
 		ncols=fscanf(fp,"%f", &effhron);
 		effhr_on.push_back(effhron);
-		ncols=3;
+		ncols=5;
 		ncols=fscanf(fp,"%f", &efflron);
 		efflr_on.push_back(efflron);
-		ncols=4;
-		ncols=fscanf(fp,"%f", &effclusteron);
-		effcluster_on.push_back(effclusteron);
-		ncols=5;
+                ncols=6;
+                ncols=fscanf(fp,"%f", &effclusteron);
+                effcluster_on.push_back(effclusteron);
+                ncols=7;
+                ncols=fscanf(fp,"%f", &effcluster2on);
+                effcluster2_on.push_back(effcluster2on);
+		ncols=8;
 		ncols=fscanf(fp, "%f", &temp);
-		ncols=6;
-		ncols=fscanf(fp, "%*[^\n]\n");
-		ncols=7;
+                ncols=9;
+                ncols=fscanf(fp, "%f", &temp);
+                ncols=10;
+                ncols=fscanf(fp, "%*[^\n]\n");
+                ncols=11;
 		ncols=fscanf(fp,"%f", &effnocutout);
 		effnocut_out.push_back(effnocutout);
-		ncols=8;
+		ncols=12;
 		ncols=fscanf(fp,"%f", &efflooseout);
 		effloose_out.push_back(efflooseout);
-		ncols=9;
+		ncols=13;
+		ncols=fscanf(fp,"%f", &effmediumout);
+		effmedium_out.push_back(effmediumout);
+		ncols=14;
+		ncols=fscanf(fp,"%f", &efftightout);
+		efftight_out.push_back(efftightout);
+		ncols=15;
 		ncols=fscanf(fp,"%f", &effhrout);
 		effhr_out.push_back(effhrout);
-		ncols=10;
+		ncols=16;
 		ncols=fscanf(fp,"%f", &efflrout);
 		efflr_out.push_back(efflrout);
-		ncols=11;
-		ncols=fscanf(fp,"%f", &effclusterout);
-		effcluster_out.push_back(effclusterout);
-		ncols=12;
-		ncols=fscanf(fp,"%f", &gammaclusterrate);
-		gamma_cluster_rate.push_back(gammaclusterrate/((effloose_on.at(j)-effloose_out.at(j))/(1.-effloose_out.at(j))));
-
+                ncols=17;
+                ncols=fscanf(fp,"%f", &effclusterout);
+                effcluster_out.push_back(effclusterout);
+                ncols=18;
+                ncols=fscanf(fp,"%f", &effcluster2out);
+                effcluster2_out.push_back(effcluster2out);
+		//fp->fclose();
 		fclose(fp);
 	}
 
 
 	//loop no wp
 	for(int i=0;i<wp.size();i++){
-		if(i!=1) continue;
+		if(i==3) continue;
 		std::vector<float> eff_on, eff_out;
 		eff_on.clear();
 		eff_out.clear();
 		if(i==0){eff_on=effnocut_on; eff_out=effnocut_out;}
 		if(i==1){eff_on=effloose_on; eff_out=effloose_out;}
-		if(i==2){eff_on=effhr_on; eff_out=effhr_out;}
-		if(i==3){eff_on=efflr_on; eff_out=efflr_out;}
-		if(i==4){eff_on=effcluster_on; eff_out=effcluster_out;}
+		if(i==2){eff_on=effmedium_on; eff_out=effmedium_out;}
+		if(i==3){eff_on=efftight_on; eff_out=efftight_out;}
+		if(i==4){eff_on=effhr_on; eff_out=effhr_out;}
+		if(i==5){eff_on=efflr_on; eff_out=efflr_out;}
+                if(i==6){eff_on=effcluster_on; eff_out=effcluster_out;}
+                if(i==7){eff_on=effcluster2_on; eff_out=effcluster2_out;}
 
 		TGraphErrors* efficiency = new TGraphErrors();
-		TGraphErrors* efficiency_temp = new TGraphErrors();
+                TGraphErrors* efficiency_temp = new TGraphErrors();
 
 		//loop HV
 		float HVmin = 6000;
-		float HVmax = 7700;
+                float HVmax = 7400;
 		for(int j=0; j<count; j++){
+
+std::cout << "eff_on.at(" << j << "): " << eff_on.at(j) << "; " << "eff_out.at(" << j << "): " << eff_out.at(j) << "; HV: " << HVs.at(j)*1000 << std::endl;
+			double par_err = 1.;
+			if(HVs.at(j)*1000<6600) par_err=10.;
+                        if(HVs.at(j)*1000>7200) par_err=5.;
+
+
+
 			float eff_new = (eff_on.at(j)-eff_out.at(j))/(1.-eff_out.at(j));
 			efficiency->SetPoint(j,(HVs.at(j)*1000),eff_new);
-			efficiency->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
+			efficiency->SetPointError(j,10,par_err*sqrt(eff_new*(1-eff_new))/sqrt(1000));
 
-			efficiency_temp->SetPoint(j,(HVs.at(j)*1000),eff_new);
-			efficiency_temp->SetPointError(j,10,sqrt(eff_new*(1-eff_new))/sqrt(1000));
+                        efficiency_temp->SetPoint(j,(HVs.at(j)*1000),eff_new);
+                        efficiency_temp->SetPointError(j,10,par_err*sqrt(eff_new*(1-eff_new))/sqrt(1000));
 
 			if(j==0) HVmin = HVs.at(j)*1000;
-			if(j==(count-1)) HVmax = HVs.at(j)*1000;
+                        if(j==(count-1)) HVmax = HVs.at(j)*1000;
+
 		}
+
+
 
 		TF1* sigmoid = new TF1("sigmoid","(1-sqrt((1-[0])*(1-[0])))/(1+exp([1]*([2]-x)))",6000,7400);
 		sigmoid->SetParName(0,"#epsilon_{max}");
@@ -145,7 +183,6 @@ void eff_curve_rate(int sn, int count, ...){
 		ltx->SetTextSize(0.04);
 		double knee = p3 - log(1/0.95-1)/p2;
 		double WP = knee+120;
-		cout << "WP: " << WP << endl;
 		TLine* lWP = new TLine(WP, 0., WP, 1);
 		lWP->SetLineStyle(2);
 		lWP->Draw("SAME");
@@ -155,28 +192,6 @@ void eff_curve_rate(int sn, int count, ...){
 		ltx->DrawLatex(HVmin, 0.41, Form("WP = %.0f V", WP));
 		ltx->DrawLatex(HVmin, 0.34, Form("knee = %.0f V", knee));
 		ltx->DrawLatex(HVmin, 0.27, Form("HV 50% = %.0f V", p3));
-
-		double HV_low = 0;
-		double HV_up = 0;
-		double gcr_low = 0;
-		double gcr_up = 0;
-
-		for(int j=0; j<count; j++){
-			if(HVs.at(j)*1000<WP){
-				HV_low = HVs.at(j)*1000;
-				gcr_low = gamma_cluster_rate.at(j);
-			} else {
-				HV_up = HVs.at(j)*1000;
-				gcr_up = gamma_cluster_rate.at(j);
-				break;
-			}
-		}
-
-		double gcr_wp = ((gcr_up-gcr_low)/(HV_up-HV_low))*(WP-HV_low) + gcr_low;
-		cout << "=============>>>>>  gcr_wp: " << gcr_wp << endl;
-		ltx->DrawLatex(HVmin, 0.20, Form("BKG(WP) = %.0f Hz/cm2", gcr_wp));
-                ltx->DrawLatex(HVmin, 0.13, Form("Active area: 10577.5 cm2", gcr_wp));
-
 		TLine* plateau = new TLine(lLimit-50, p1, uLimit+50, p1);
 		plateau->SetLineStyle(2);
 		plateau->Draw();
@@ -185,9 +200,9 @@ void eff_curve_rate(int sn, int count, ...){
 		else add = lLimit+add;
 		ltx->DrawLatex(add, p1+0.02, Form("plateau = %.2f", p1));
 		string outfile = "Efficiency";
-		string outfile_png = Form("ScanId_%d/Efficiency_rate_SN%d_%s.png", sn, sn, wp.at(i));
-		string outfile_pdf = Form("ScanId_%d/Efficiency_rate_SN%d_%s.pdf", sn, sn, wp.at(i));
-		string outfile_root =Form("ScanId_%d/Efficiency_rate_SN%d_%s.root", sn, sn, wp.at(i));
+		string outfile_png = Form("ScanId_%d/Efficiency_SN%d_%s.png", sn, sn, wp.at(i));
+		string outfile_pdf = Form("ScanId_%d/Efficiency_SN%d_%s.pdf", sn, sn, wp.at(i));
+		string outfile_root =Form("ScanId_%d/Efficiency_SN%d_%s.root", sn, sn, wp.at(i));
 		gPad->SaveAs(outfile_png.c_str());
 		gPad->SaveAs(outfile_pdf.c_str());
 		TFile* effout = new TFile(outfile_root.c_str(), "RECREATE");

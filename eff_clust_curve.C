@@ -134,7 +134,7 @@ void eff_clust_curve(int sn, int count, ...){
 
 		//loop HV
 		float HVmin = 6000;
-		float HVmax = 7400;
+		float HVmax = 7700;
 		for(int j=0; j<count; j++){
 			float eff_new = (eff_on.at(j)-eff_out.at(j))/(1.-eff_out.at(j));
 			efficiency->SetPoint(j,(HVs.at(j)*1000),eff_new);

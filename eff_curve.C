@@ -96,7 +96,7 @@ void eff_curve(int sn, int count, ...){
 
 		//loop HV
 		float HVmin = 6000;
-		float HVmax = 7400;
+		float HVmax = 7700;
 		for(int j=0; j<count; j++){
 
 

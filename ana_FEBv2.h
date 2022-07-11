@@ -51,12 +51,14 @@ class ana_FEBv2 {
 		virtual Bool_t   Notify();
 		virtual void     Show(Long64_t entry = -1);
 
+		double active_area = 10577.5/2; //re41
 		bool isFEBv2r2 = true;
 		bool plot_clust_par = false;
-		bool print_gamma_histos = true;
+		bool print_gamma_histos = false;
 		bool no_trig_case = false;
 		bool align_XY = false;
-	        double V_conector = 299.792*0.52;//0.6;// mm/ns  - check it
+		bool retrig_study = false;
+	        double V_conector = 299.792*0.568;//0.6;// mm/ns  - check it
 
                 TH1F* hLR_ns = new TH1F("hLR_ns", "number of LR signals", 3500, 0.0, 35000);
                 TH1F* hHR_ns = new TH1F("hHR_ns", "number of HR signals", 3500, 0.0, 35000);
