@@ -8,14 +8,16 @@ struct stripTimes
 {
         void addLRframe(int i , float time) {LRframe.push_back(i); LRtime.push_back(time) ; LRframeOK.push_back(true); LRframeBkg.push_back(false);}
         void addHRframe(int i, float time) {HRframe.push_back(i); HRtime.push_back(time) ; HRframeOK.push_back(true); HRframeBkg.push_back(false);}
+	// LR variables
         std::vector<int> LRframe;
         std::vector<float> LRtime;
         std::vector<bool> LRframeOK;
+        std::vector<bool> LRframeBkg;
+	// HR variables
         std::vector<int> HRframe;
         std::vector<float> HRtime;
         std::vector<bool> HRframeOK;
         std::vector<bool> HRframeBkg;
-        std::vector<bool> LRframeBkg;
 
         std::vector<std::pair<int,int> > deltas;
         void buildDeltas()
