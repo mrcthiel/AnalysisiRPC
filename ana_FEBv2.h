@@ -126,6 +126,9 @@ class ana_FEBv2 {
 		int N_cluster_good=0;
 		int n_paired_srip = 0;
 		int n_paired_srip_med = 0;
+        int nr_of_clust = 1; //minimum number of clusters to be displayed
+        int clust_multiplicity = 2; // minimal cluster multiplicity
+
 
         // vector to keep track of all events with two or more events
         std::vector<int> multiple_cluster_events;
