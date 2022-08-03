@@ -37,10 +37,6 @@ void ana_FEBv2::Loop()
         // Make directory for the event display per event (random)
         s.Form("mkdir ScanId_%d/HV%d/plts_per_event", sn_, hv_);
         gSystem->Exec(s);
-
-	    // Make directory for the event display per event (all events with multiple events)
-        s.Form("mkdir ScanId_%d/HV%d/plts_per_event_multi", sn_, hv_);
-        gSystem->Exec(s);
     }
 
 	std::vector<TH1F*> hLRT_V; 
@@ -65,20 +61,6 @@ void ana_FEBv2::Loop()
 
     std::vector<TH2F*> hLRT_event; //T(LR -Trig) per event
     std::vector<TH2F*> hHRT_event; //T(LR -Trig) per event
-
-    std::vector<TH1F*> deltaT_event_multi; // deltaT per event 1D (multiple clusters)
-    std::vector<TH2F*> deltaT_event_2D_multi; // deltaT per event 2D (multiple clusters)
-
-    std::vector<TH2F*> hdeltaClusterT_event_multi; // hdeltaClusterT per event (multiple clusters)
-    std::vector<TH1F*> hClusterSize_event_multi; // hClusterSize per event (multiple clusters)
-
-    std::vector<TH1F*> hNClusters_event_multi; // Number of clusters per event (multiple clusters)
-
-    std::vector<TH2F*> h2_XY_event_multi; //X_Y position per event (multiple clusters)
-    std::vector<TH2F*> h2_XY_cls_event_multi; //X_Y position clusters per event (multiple clusters)
-
-    std::vector<TH2F*> hLRT_event_multi; //T(LR -Trig) per event (multiple clusters)
-    std::vector<TH2F*> hHRT_event_multi; //T(LR -Trig) per event (multiple clusters)
     
 	for (int i=0;i<48;i++){ 
 		TH1F *h1 = new TH1F(Form("hLRT_V_%d",i),"T (LR - Trig)",10000,-9000,1000); 
@@ -457,8 +439,8 @@ void ana_FEBv2::Loop()
 			int ntriggerHR_signal_strip = 0;
 			int ntriggerLR_signal_strip = 0;
 
-            // for histograms per event (random)
-            if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
+            // for histograms per event
+            if (plot_per_event and jj==2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
                 // DeltaT per event 1D
                 TH1F *h8 = new TH1F(Form("deltaT event %d 1D", ntrig_allevent), "T (HR - LR)", 300, -30, 30);
                 deltaT_event.push_back(h8);
@@ -494,43 +476,6 @@ void ana_FEBv2::Loop()
                 hHRT_event.push_back(h16);
             }
 
-            // for histograms per event (multiple clusters per event)
-            if (plot_per_event and jj==2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                // DeltaT per event 1D
-                TH1F *h17 = new TH1F(Form("deltaT event %d 1D", ntrig_allevent), "T (HR - LR)", 300, -30, 30);
-                deltaT_event_multi.push_back(h17);
-
-                //DeltaT per event 2D
-                TH2F *h18 = new TH2F(Form("deltaT event %d 2D", ntrig_allevent), "T (HR - LR)", 50,0,50,300, -10, 10);
-                deltaT_event_2D_multi.push_back(h18);
-
-                //ClusterDeltaT vs cluster strip
-                TH2F *h19 = new TH2F("hdeltaClusterT", "ClusterT (HR - LR)", 50,0,50,300, -30, 30);
-                hdeltaClusterT_event_multi.push_back(h19);
-
-                //hClusterSize per event 1D
-                TH1F *h20 = new TH1F("hClusterSize", "Cluster Size" ,10,0,10);
-                hClusterSize_event_multi.push_back(h20);
-
-                //Number of clusters per event
-                TH1F *h21 = new TH1F("hNClusters", "Number of Clusters" ,10,0,10);
-                hNClusters_event_multi.push_back(h21);
-
-                //X_Y position per event
-                TH2F* h22 = new TH2F("X-Y position", " X - Y ",2000,-100,760,6000,-200,1520);
-                h2_XY_event_multi.push_back(h22);
-
-                //X_Y position clusters per event
-                TH2F* h23 = new TH2F("X-Y position Cluster"," X - Y ",2000,-100,760,6000,-200,1520);
-                h2_XY_cls_event_multi.push_back(h23);
-
-                // Heat map of T(HR-Trig) and T(LR-Trig) per event
-                TH2F* h24 = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
-                hLRT_event_multi.push_back(h24);
-                TH2F* h25 = new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_LR-muW2_LR), muW1_LR, muW2_LR);
-                hHRT_event_multi.push_back(h25);
-            }
-
 			//for clustering
 			vector<int> strip_HR;
 			vector<int> strip_LR;
@@ -550,14 +495,9 @@ void ana_FEBv2::Loop()
 					double HR_trig = time_in_strip_new + time_to_conector_new;
 					hHRT->Fill(i,HR_trig);
 
-                    //hHRT per event (random)
-                    if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        hHRT_event.at(ntrig_allevent)->Fill(i,HR_trig);
-                    }
-
-                    //hHRT per event (all events with multiple clusters)
+                    //hHRT per event
                     if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        hHRT_event_multi.at(multiple_cluster_count2)->Fill(i,HR_trig);
+                        hHRT_event.at(multiple_cluster_count2)->Fill(i,HR_trig);
                     }
 
 					if ( !((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ))
@@ -584,14 +524,9 @@ void ana_FEBv2::Loop()
 					double LR_trig = time_in_strip_new + time_to_conector_new;
 					hLRT->Fill(i,LR_trig);
 
-                    //hlRT per event (random)
-                    if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        hLRT_event.at(ntrig_allevent)->Fill(i,LR_trig);
-                    }
-
-                    //hlRT per event (all events with multiple clusters)
+                    //hlRT per event
                     if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        hLRT_event_multi.at(multiple_cluster_count2)->Fill(i,LR_trig);
+                        hLRT_event.at(multiple_cluster_count2)->Fill(i,LR_trig);
                     }
 
 					if ( !((LR_trig) > muW1_LR and (LR_trig) < muW2_LR ))
@@ -654,14 +589,9 @@ void ana_FEBv2::Loop()
 					h2_XY->Fill(X_Y.at(0),(X_Y.at(1)/*+Y_align_factor[i]*/));
 					//std::cout << "X: " << X_Y.at(0) << "; Y: " << X_Y.at(1) << std::endl;
 
-                    //h2_XY per event (random)
-                    if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        h2_XY_event.at(ntrig_allevent)->Fill(X_Y.at(0),(X_Y.at(1)));
-                    }
-
-                    //h2_XY per event (all events with multiple clusters)
+                    //h2_XY per event
                     if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        h2_XY_event_multi.at(multiple_cluster_count2)->Fill(X_Y.at(0),(X_Y.at(1)));
+                        h2_XY_event.at(multiple_cluster_count2)->Fill(X_Y.at(0),(X_Y.at(1)));
                     }
 
 					sumT=time_in_strip2_new+time_in_strip_new;//LR_trig+HR_trig;
@@ -675,16 +605,10 @@ void ana_FEBv2::Loop()
                     }
 					hsumT_1D->Fill(sumT);
 
-                    //deltaT plots per event (random)
-                    if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        deltaT_event.at(ntrig_allevent)->Fill(deltaT);
-                        deltaT_event_2D.at(ntrig_allevent)->Fill(i,deltaT);
-                    }
-
-                    //deltaT plots per event (all events with multiple clusters)
+                    //deltaT plots per event
                     if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        deltaT_event_multi.at(multiple_cluster_count2)->Fill(deltaT);
-                        deltaT_event_2D_multi.at(multiple_cluster_count2)->Fill(i,deltaT);
+                        deltaT_event.at(multiple_cluster_count2)->Fill(deltaT);
+                        deltaT_event_2D.at(multiple_cluster_count2)->Fill(i,deltaT);
                     }
 				}
 			} // strip loop ends
@@ -749,14 +673,9 @@ void ana_FEBv2::Loop()
 			}
 			hNClusters->Fill(CLUSTER.size());
 
-            //Number of clusters per event (random)
-            if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                hNClusters_event.at(ntrig_allevent)->Fill(CLUSTER.size());
-            }
-
-            //Number of clusters per event (all events with multiple clusters)
+            //Number of clusters per event
             if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                hNClusters_event_multi.at(multiple_cluster_count2)->Fill(CLUSTER.size());
+                hNClusters_event.at(multiple_cluster_count2)->Fill(CLUSTER.size());
             }
 
 			sum_cluster_size = sum_cluster_size + CLUSTER.size();
@@ -766,52 +685,37 @@ void ana_FEBv2::Loop()
 				if(CLUSTER.at(ij).size()>0.) {
                     hClusterSize->Fill(CLUSTER.at(ij).size());
 
-                    //hClusterSize per event (random)
-                    if(ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        hClusterSize_event.at(ntrig_allevent)->Fill(CLUSTER.at(ij).size());
-                    }
-
-                    //hClusterSize per event (all events with multiple clusters)
+                    //hClusterSize per event
                     if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        hClusterSize_event_multi.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).size());
+                        hClusterSize_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).size());
                     }
                 }
 				hdeltaTCluster_1D->Fill(CLUSTER.at(ij).time());
 				hdeltaClusterT->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
 
-                //hdeltaTCluster per event (random)
-                if(ntrig_allevent < nr_of_event_plots && plot_per_event) {
-                    hdeltaClusterT_event.at(ntrig_allevent)->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
-                }
-
-                //hdeltaTCluster per event (all events with multiple clusters)
+                //hdeltaTCluster per event
                 if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                    hdeltaClusterT_event_multi.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
+                    hdeltaClusterT_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
                 }
 //                                int strip_cls_int = (int)CLUSTER.at(ij).strip();
 //                                if((CLUSTER.at(ij).strip()-strip_cls_int)>0.5) strip_cls_int = strip_cls_int+1;
 //				vector<double> X_Y_cls = convert_DeltaTAndStrip_To_XY(sn_,CLUSTER.at(ij).strip(),CLUSTER.at(ij).time_XY()/*+dT_align_factor[strip_cls_int]*/);
 //				if(CLUSTER.at(ij).size()>=2) h2_XY_cls->Fill(X_Y_cls.at(0),X_Y_cls.at(1)/*+Y_align_factor[strip_cls_int]*/);
-                if(CLUSTER.at(ij).size()>=2) {
-                    h2_XY_cls->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
+                //if(CLUSTER.at(ij).size()>=2) {
+                h2_XY_cls->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
 
-                    //X_Y positions per event (random)
-                    if (ntrig_allevent < nr_of_event_plots and plot_per_event) {
-                        h2_XY_cls_event.at(ntrig_allevent)->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
-                    }
 
-                    //X_Y positions per event (all events with multiple clusters))
-                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
-                        h2_XY_cls_event_multi.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
-                    }
-
-                    if (multiple_cluster_count <  nr_of_event_plots and not std::count(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent)) { //only add the events inside the muon window
-                        multiple_cluster_count++;
-                        if(jj==0) multiple_cluster_events.push_back(ntrig_allevent);
-                        //multiple_cluster_count++;
-                    }
-
+                //X_Y positions per event
+                if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                    h2_XY_cls_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
                 }
+
+                if (CLUSTER.at(ij).size()>=nr_of_clust  and CLUSTER.size()>=clust_multiplicity and multiple_cluster_count<nr_of_event_plots and not std::count(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent)) { //only add the events inside the muon window
+                    //multiple_cluster_count++;
+                    if(jj==0) multiple_cluster_events.push_back(ntrig_allevent);
+                    multiple_cluster_count++;
+                }
+
 			}
 
 			if(cluster_good) N_cluster_good++;
@@ -885,9 +789,9 @@ void ana_FEBv2::Loop()
 		myfile<<""<<"\n";
 
 		TString sss("");
-		if(jj==0) sss.Form("muons_");
+		if(jj==0 || jj==2) sss.Form("muons_");
 		if(jj==1) sss.Form("gammas_");
-        if(jj==2) sss.Form("muons_multi_");
+        //if(jj==2) sss.Form("muons_multi_");
 
         if(jj==0 || (jj==1&&print_gamma_histos)){
 			// Draw histos and save
@@ -1008,58 +912,6 @@ void ana_FEBv2::Loop()
 
 			plot_and_save_2x_1D(hLRT_strip23, hHRT_strip23, sss, "DeltaTrig_side_forTimeWindow_strip23", hv_,sn_, 0);
 
-            for(int event=0; event < deltaT_event.size(); event++) {
-                // DeltaT per event 1D
-                deltaT_event.at(event)->GetXaxis()->SetTitle(Form("deltaT event %d", event));
-                deltaT_event.at(event)->GetYaxis()->SetTitle("Events");
-                deltaT_event.at(event)->SetTitle("");
-                plot_and_save_1D(deltaT_event.at(event), sss, Form("deltaT_event%d_1D", event), hv_, sn_, 1, "plts_per_event/");
-
-                //DeltaT per event 2D
-                deltaT_event_2D.at(event)->GetYaxis()->SetTitle(Form("deltaT event %d", event));
-                deltaT_event_2D.at(event)->GetXaxis()->SetTitle("strip");
-                deltaT_event_2D.at(event)->SetTitle("");
-                deltaT_event_2D.at(event)->SetMarkerStyle(20);
-                deltaT_event_2D.at(event)->SetMarkerSize(0.4);
-                plot_and_save_2D(deltaT_event_2D.at(event), sss, Form("deltaT_event%d_2D", event), hv_, sn_, "P", "plts_per_event/");
-
-                //ClusterDeltaT vs cluster strip
-                hdeltaClusterT_event.at(event)->GetYaxis()->SetTitle(Form("Cluster delta time [ns] event %d", event));
-                hdeltaClusterT_event.at(event)->GetXaxis()->SetTitle("Cluster Strips");
-                hdeltaClusterT_event.at(event)->SetTitle("");
-                hdeltaClusterT_event.at(event)->SetMarkerStyle(20);
-                hdeltaClusterT_event.at(event)->SetMarkerSize(0.4);
-                plot_and_save_2D(hdeltaClusterT_event.at(event), sss, Form("ClusterDeltaT_event%d_2D", event), hv_, sn_, "P", "plts_per_event/");
-
-                //hClusterSize per event
-                hClusterSize_event.at(event)->SetTitle("");
-                hClusterSize_event.at(event)->GetYaxis()->SetTitle("Events");
-                hClusterSize_event.at(event)->GetXaxis()->SetTitle(Form("Cluster size event %d", event));
-                plot_and_save_1D(hClusterSize_event.at(event),sss, Form("Cluster_size_event%d", event), hv_, sn_,1111, "plts_per_event/");
-
-                //Number of clusters per event
-                hNClusters_event.at(event)->GetYaxis()->SetTitle("Events");
-                hNClusters_event.at(event)->GetXaxis()->SetTitle(Form("Number of Clusters event %d", event));
-                hNClusters_event.at(event)->SetTitle("");
-                plot_and_save_1D(hNClusters_event.at(event),sss, Form("N_Clusters_event%d", event), hv_, sn_,1111, "plts_per_event/");
-
-                //X_Y position + X_Y position clusters per event
-                h2_XY_event.at(event)->SetTitle("");
-                h2_XY_event.at(event)->GetYaxis()->SetTitle("y [mm]");
-                h2_XY_event.at(event)->GetXaxis()->SetTitle(Form("x [mm] event %d", event));
-                h2_XY_event.at(event)->SetMarkerStyle(kFullCircle);
-                h2_XY_event.at(event)->SetMarkerSize(0.4);
-                h2_XY_cls_event.at(event)->SetTitle("");
-                h2_XY_cls_event.at(event)->SetMarkerStyle(kOpenCircle);
-                h2_XY_cls_event.at(event)->SetMarkerColor(kRed);
-                h2_XY_cls_event.at(event)->SetLineColor(kRed);
-                h2_XY_cls_event.at(event)->SetMarkerSize(1);
-                plot_and_save_together_2D(h2_XY_event.at(event), h2_XY_cls_event.at(event), sss, Form("X_Y_together_event%d", event), hv_, sn_, "plts_per_event/");
-
-                // Heat map of T(HR-Trig) and T(LR-Trig) per event
-                plot_and_save_2x_2D(hHRT_event.at(event), hLRT_event.at(event), sss, Form("DeltaTrig_side_event%d",event), hv_, sn_, "COLZ", "plts_per_event/");
-            }
-
             if(jj==0){
 				for (int i=0;i<48;i++){
 					plot_and_save_2x_1D(hLRT_V.at(i), hHRT_V.at(i), sss, Form("DeltaTrig_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
@@ -1095,60 +947,60 @@ void ana_FEBv2::Loop()
         if(jj == 2) {
             for(int event=0; event < nr_of_event_plots; event++) {
                 // DeltaT per event 1D
-                deltaT_event_multi.at(event)->GetXaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
-                deltaT_event_multi.at(event)->GetYaxis()->SetTitle("Events");
-                deltaT_event_multi.at(event)->SetTitle("");
-                deltaT_event_multi.at(event)->SetStats(true);
-                plot_and_save_1D(deltaT_event_multi.at(event), sss, Form("deltaT_event%d_1D", multiple_cluster_events.at(event)), hv_, sn_, 1, "plts_per_event_multi/");
+                deltaT_event.at(event)->GetXaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
+                deltaT_event.at(event)->GetYaxis()->SetTitle("Events");
+                deltaT_event.at(event)->SetTitle("");
+                deltaT_event.at(event)->SetStats(true);
+                plot_and_save_1D(deltaT_event.at(event), sss, Form("deltaT_event%d_1D", multiple_cluster_events.at(event)), hv_, sn_, 1, "plts_per_event/");
 
                 //DeltaT per event 2D
-                deltaT_event_2D_multi.at(event)->GetYaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
-                deltaT_event_2D_multi.at(event)->GetXaxis()->SetTitle("strip");
-                deltaT_event_2D_multi.at(event)->SetTitle("");
-                deltaT_event_2D_multi.at(event)->SetMarkerStyle(20);
-                deltaT_event_2D_multi.at(event)->SetMarkerSize(0.4);
-                plot_and_save_2D(deltaT_event_2D_multi.at(event), sss, Form("deltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event_multi/");
+                deltaT_event_2D.at(event)->GetYaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
+                deltaT_event_2D.at(event)->GetXaxis()->SetTitle("strip");
+                deltaT_event_2D.at(event)->SetTitle("");
+                deltaT_event_2D.at(event)->SetMarkerStyle(20);
+                deltaT_event_2D.at(event)->SetMarkerSize(0.4);
+                plot_and_save_2D(deltaT_event_2D.at(event), sss, Form("deltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event/");
 
                 //ClusterDeltaT vs cluster strip
-                hdeltaClusterT_event_multi.at(event)->GetYaxis()->SetTitle(Form("Cluster delta time [ns] event %d", multiple_cluster_events.at(event)));
-                hdeltaClusterT_event_multi.at(event)->GetXaxis()->SetTitle("Cluster Strips");
-                hdeltaClusterT_event_multi.at(event)->SetTitle("");
-                hdeltaClusterT_event_multi.at(event)->SetMarkerStyle(20);
-                hdeltaClusterT_event_multi.at(event)->SetMarkerSize(0.4);
-                plot_and_save_2D(hdeltaClusterT_event_multi.at(event), sss, Form("ClusterDeltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event_multi/");
+                hdeltaClusterT_event.at(event)->GetYaxis()->SetTitle(Form("Cluster delta time [ns] event %d", multiple_cluster_events.at(event)));
+                hdeltaClusterT_event.at(event)->GetXaxis()->SetTitle("Cluster Strips");
+                hdeltaClusterT_event.at(event)->SetTitle("");
+                hdeltaClusterT_event.at(event)->SetMarkerStyle(20);
+                hdeltaClusterT_event.at(event)->SetMarkerSize(0.4);
+                plot_and_save_2D(hdeltaClusterT_event.at(event), sss, Form("ClusterDeltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event/");
 
                 //hClusterSize per event
-                hClusterSize_event_multi.at(event)->SetTitle("");
-                hClusterSize_event_multi.at(event)->GetYaxis()->SetTitle("Events");
-                hClusterSize_event_multi.at(event)->GetXaxis()->SetTitle(Form("Cluster size event %d", multiple_cluster_events.at(event)));
-                hClusterSize_event_multi.at(event)->SetStats(true);
-                plot_and_save_1D(hClusterSize_event_multi.at(event),sss, Form("Cluster_size_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event_multi/");
+                hClusterSize_event.at(event)->SetTitle("");
+                hClusterSize_event.at(event)->GetYaxis()->SetTitle("Events");
+                hClusterSize_event.at(event)->GetXaxis()->SetTitle(Form("Cluster size event %d", multiple_cluster_events.at(event)));
+                hClusterSize_event.at(event)->SetStats(true);
+                plot_and_save_1D(hClusterSize_event.at(event),sss, Form("Cluster_size_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event/");
 
                 //Number of clusters per event
-                hNClusters_event_multi.at(event)->GetYaxis()->SetTitle("Events");
-                hNClusters_event_multi.at(event)->GetXaxis()->SetTitle(Form("Number of Clusters event %d", multiple_cluster_events.at(event)));
-                hNClusters_event_multi.at(event)->SetTitle("");
-                hNClusters_event_multi.at(event)->SetStats(true);
-                plot_and_save_1D(hNClusters_event_multi.at(event),sss, Form("N_Clusters_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event_multi/");
+                hNClusters_event.at(event)->GetYaxis()->SetTitle("Events");
+                hNClusters_event.at(event)->GetXaxis()->SetTitle(Form("Number of Clusters event %d", multiple_cluster_events.at(event)));
+                hNClusters_event.at(event)->SetTitle("");
+                hNClusters_event.at(event)->SetStats(true);
+                plot_and_save_1D(hNClusters_event.at(event),sss, Form("N_Clusters_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event/");
 
                 //X_Y position + X_Y position clusters per event
-                h2_XY_event_multi.at(event)->SetTitle("");
-                h2_XY_event_multi.at(event)->GetYaxis()->SetTitle("y [mm]");
-                h2_XY_event_multi.at(event)->GetXaxis()->SetTitle(Form("x [mm] event %d", multiple_cluster_events.at(event)));
-                h2_XY_event_multi.at(event)->SetMarkerStyle(kFullCircle);
-                h2_XY_event_multi.at(event)->SetMarkerSize(0.4);
-                h2_XY_cls_event_multi.at(event)->SetTitle("");
-                h2_XY_cls_event_multi.at(event)->SetMarkerStyle(kOpenCircle);
-                h2_XY_cls_event_multi.at(event)->SetMarkerColor(kRed);
-                h2_XY_cls_event_multi.at(event)->SetLineColor(kRed);
-                h2_XY_cls_event_multi.at(event)->SetMarkerSize(1);
-                plot_and_save_together_2D(h2_XY_event_multi.at(event), h2_XY_cls_event_multi.at(event), sss, Form("X_Y_together_event%d", multiple_cluster_events.at(event)), hv_, sn_, "plts_per_event_multi/");
+                h2_XY_event.at(event)->SetTitle("");
+                h2_XY_event.at(event)->GetYaxis()->SetTitle("y [mm]");
+                h2_XY_event.at(event)->GetXaxis()->SetTitle(Form("x [mm] event %d", multiple_cluster_events.at(event)));
+                h2_XY_event.at(event)->SetMarkerStyle(kFullCircle);
+                h2_XY_event.at(event)->SetMarkerSize(0.4);
+                h2_XY_cls_event.at(event)->SetTitle("");
+                h2_XY_cls_event.at(event)->SetMarkerStyle(kOpenCircle);
+                h2_XY_cls_event.at(event)->SetMarkerColor(kRed);
+                h2_XY_cls_event.at(event)->SetLineColor(kRed);
+                h2_XY_cls_event.at(event)->SetMarkerSize(1);
+                plot_and_save_together_2D(h2_XY_event.at(event), h2_XY_cls_event.at(event), sss, Form("X_Y_together_event%d", multiple_cluster_events.at(event)), hv_, sn_, "plts_per_event/");
 
                 // Heat map of T(HR-Trig) and T(LR-Trig) per event
-                plot_and_save_2x_2D(hHRT_event_multi.at(event), hLRT_event_multi.at(event), sss, Form("DeltaTrig_side_event%d",multiple_cluster_events.at(event)), hv_, sn_, "COLZ", "plts_per_event_multi/");
+                plot_and_save_2x_2D(hHRT_event.at(event), hLRT_event.at(event), sss, Form("DeltaTrig_side_event%d",multiple_cluster_events.at(event)), hv_, sn_, "COLZ", "plts_per_event/");
 
                 // clear histograms
-                deltaT_event_multi.at(event)->Reset(); deltaT_event_2D_multi.at(event)->Reset(); hdeltaClusterT_event_multi.at(event)->Reset(); hClusterSize_event_multi.at(event)->Reset(); hNClusters_event_multi.at(event)->Reset(); h2_XY_event_multi.at(event)->Reset(); h2_XY_cls_event_multi.at(event)->Reset(); hHRT_event_multi.at(event)->Reset(); hLRT_event_multi.at(event)->Reset();
+                deltaT_event.at(event)->Reset(); deltaT_event_2D.at(event)->Reset(); hdeltaClusterT_event.at(event)->Reset(); hClusterSize_event.at(event)->Reset(); hNClusters_event.at(event)->Reset(); h2_XY_event.at(event)->Reset(); h2_XY_cls_event.at(event)->Reset(); hHRT_event.at(event)->Reset(); hLRT_event.at(event)->Reset();
             }
         }
 	}
