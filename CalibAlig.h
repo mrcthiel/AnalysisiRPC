@@ -48,6 +48,7 @@ vector<int> Feb_Chamber(int sn_){
         if(sn_>1030) {feb_=13; chamber_=31; side_=1;}
         if(sn_==382 || sn_==384) {feb_=18; chamber_=41; side_=2;}//feb19
 	if(sn_==388) {feb_=18; chamber_=31; side_=2;}//feb19
+    if(sn_>=1217) {feb_=18; chamber_=41; side_=2;}
 
 // ADD HERE NEW SACN_ID AND IT FEB AND CHAMBER NUMBERS
 // EXAMPLE:
