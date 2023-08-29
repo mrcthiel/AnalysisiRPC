@@ -12,6 +12,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TFile.h>
+#include <vector>
 
 // Header file for the classes stored in the TTree if any.
 
@@ -19,8 +20,8 @@ class ana_FEBv2 {
 	public :
 		TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 		Int_t           fCurrent; //!current Tree number in a TChain
-		Int_t	   hv_;
-		Int_t	   sn_;
+		Int_t	   hv_; // High Voltage (HV) Value
+		Int_t	   sn_; // Scan ID (SN) valu
 		//   Int_t	   mt_;
 		//   Int_t	   muW1_;
 		//   Int_t	   muW2_;
@@ -58,17 +59,18 @@ class ana_FEBv2 {
 		bool no_trig_case = false;
 		bool align_XY = false;
 		bool retrig_study = false;
+        bool plot_per_event = true;
 	        double V_conector = 299.792*0.568;//0.6;// mm/ns  - check it
 
-                TH1F* hLR_ns = new TH1F("hLR_ns", "number of LR signals", 3500, 0.0, 35000);
-                TH1F* hHR_ns = new TH1F("hHR_ns", "number of HR signals", 3500, 0.0, 35000);
+        TH1F* hLR_ns = new TH1F("hLR_ns", "number of LR signals", 3500, 0.0, 35000);
+        TH1F* hHR_ns = new TH1F("hHR_ns", "number of HR signals", 3500, 0.0, 35000);
 		TH1F* hLR = new TH1F("hLR", "LR", 50, 0.0, 50);
 		TH1F* hHR = new TH1F("hHR", "HR", 50, 0.0, 50);
 		TH1F* hLRn = new TH1F("hLRn", "hLRn", 50, 0.0, 50);
 		TH1F* hHRn = new TH1F("hHRn", "hHRn", 50, 0.0, 50);
-                TH1F* hLHRn = new TH1F("hLHRn", "hLHRn", 50, 0.0, 50);
-                TH1F* hLHRn_dif = new TH1F("hLHRn_dif", "hLHRn_dif", 50, 0.0, 50);
-                TH1F* hLHR_dif = new TH1F("hLHR_dif", "LHR_dif", 50, 0.0, 50);
+        TH1F* hLHRn = new TH1F("hLHRn", "hLHRn", 50, 0.0, 50);
+        TH1F* hLHRn_dif = new TH1F("hLHRn_dif", "hLHRn_dif", 50, 0.0, 50);
+        TH1F* hLHR_dif = new TH1F("hLHR_dif", "LHR_dif", 50, 0.0, 50);
 		TH2F* nFiredHR_per_strip = new TH2F("nFiredHR_per_strip", "# fired strip ; strip; #", 50,0,50,10, 1, 11);
 		TH2F* nFiredLR_per_strip = new TH2F("nFiredLR_per_strip", "# fired strip ; strip; #", 50,0,50,10, 1, 11);
 		TH2F* hdeltaT = new TH2F("deltaT", "T (HR - LR)", 50,0,50,300, -30, 30);
@@ -77,8 +79,8 @@ class ana_FEBv2 {
 		TH1F* hsumT_1D = new TH1F("sumT", "T (HR + LR)", 1000, -5000, 0);
 		TH1F* hLRT_ = new TH1F("hLRT_","T (LR - Trig)" ,10000,-9000,1000);
 		TH1F* hHRT_ = new TH1F("hHRT_","T (HR - Trig)" ,10000,-9000,1000);
-                TH1F* hLRT_strip23 = new TH1F("hLRT_strip23","T (LR - Trig)" ,10000,-9000,1000);
-                TH1F* hHRT_strip23 = new TH1F("hHRT_strip23","T (HR - Trig)" ,10000,-9000,1000);
+        TH1F* hLRT_strip23 = new TH1F("hLRT_strip23","T (LR - Trig)" ,10000,-9000,1000);
+        TH1F* hHRT_strip23 = new TH1F("hHRT_strip23","T (HR - Trig)" ,10000,-9000,1000);
 		TH1F* hLRT_temp = new TH1F("hLRT_muon_window","T (LR - Trig)" ,10000,-9000,1000);
 		TH1F* hHRT_temp = new TH1F("hHRT_muon_window","T (HR - Trig)" ,10000,-9000,1000);
 		TH1F* hLRT_2 = new TH1F("hLRT_2","n strip LR" ,20,0,20);
@@ -94,8 +96,8 @@ class ana_FEBv2 {
 		TGraph *g_cluster_number = new TGraph();
 
 //		TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",400,-60,720,400,-20,1300);
-                TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",2000,-100,760,6000,-200,1520);
-                TH2F* h2_XY_cls = new TH2F("h2_XY_cls"," X - Y ",2000,-100,760,6000,-200,1520);
+        TH2F* h2_XY = new TH2F("h2_XY"," X - Y ",2000,-100,760,6000,-200,1520);
+        TH2F* h2_XY_cls = new TH2F("h2_XY_cls"," X - Y ",2000,-100,760,6000,-200,1520);
 
 
 		Long64_t nbytes = 0, nb = 0;
@@ -106,10 +108,12 @@ class ana_FEBv2 {
 		int trig_exists=0;
 		int ntrig_all=0;
 		float deltaT = -999;
+        float deltaT_per_event2 =-999;
+        int nr_of_event_plots = 10;
 		float sumT = 0;
 		int ntrig_allevent=0;
 		int ntrig_allevent_muon_window=0;
-                int ntrig_allevent_gamma_window=0;
+        int ntrig_allevent_gamma_window=0;
 		int ntriggerHR_signal=0;
 		int ntriggerLR_signal=0;
 		int bad_trig=0;
@@ -122,7 +126,19 @@ class ana_FEBv2 {
 		int N_cluster_good=0;
 		int n_paired_srip = 0;
 		int n_paired_srip_med = 0;
+        int nr_of_clust = 1; //minimum number of clusters to be displayed
+        int clust_multiplicity = 2; // minimal cluster multiplicity
 
+
+        // vector to keep track of all events with two or more events
+        std::vector<int> multiple_cluster_events;
+        int multiple_cluster_count = 0;
+        int multiple_cluster_count2 = 0;
+
+    double muW1_HR_temp;
+        double muW2_HR_temp;
+        double muW1_LR_temp;
+        double muW2_LR_temp;
 };
 
 #endif

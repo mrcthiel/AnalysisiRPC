@@ -5,6 +5,7 @@
 #include <TCanvas.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "MuonWindow.C"
 #include "stripTimes.h"
 #include "CalibAlig.h"
@@ -26,37 +27,57 @@ void ana_FEBv2::Loop()
 
 	// for retrig study
 	s.Form("mkdir ScanId_%d/HV%d/plts_per_strip",sn_,hv_);
-        gSystem->Exec(s);
-        if(retrig_study){ 
+    gSystem->Exec(s);
+    if(retrig_study){
 		s.Form("mkdir ScanId_%d/HV%d/retriggering_study",sn_,hv_);
 		gSystem->Exec(s);
 	}
+
+    if (plot_per_event) {
+        // Make directory for the event display per event (random)
+        s.Form("mkdir ScanId_%d/HV%d/plts_per_event", sn_, hv_);
+        gSystem->Exec(s);
+    }
+
 	std::vector<TH1F*> hLRT_V; 
-        std::vector<TH1F*> hHRT_V;
-        std::vector<TH1F*> hLRT_zoom_V;
-        std::vector<TH1F*> hHRT_zoom_V;
-        std::vector<TH1F*> hdeltaT_1D_V;
+    std::vector<TH1F*> hHRT_V;
+    std::vector<TH1F*> hLRT_zoom_V;
+    std::vector<TH1F*> hHRT_zoom_V;
+    std::vector<TH1F*> hdeltaT_1D_V;
 
-        std::vector<TH1F*> hLRT_retrig_V;
-        std::vector<TH1F*> hHRT_retrig_V;
+    std::vector<TH1F*> hLRT_retrig_V;
+    std::vector<TH1F*> hHRT_retrig_V;
 
+    std::vector<TH1F*> deltaT_event; // deltaT per event 1D
+    std::vector<TH2F*> deltaT_event_2D; // deltaT per event 2D
+
+    std::vector<TH2F*> hdeltaClusterT_event; // hdeltaClusterT per event
+    std::vector<TH1F*> hClusterSize_event; // hClusterSize per event
+
+    std::vector<TH1F*> hNClusters_event; // Number of clusters per event
+
+    std::vector<TH2F*> h2_XY_event; //X_Y position per event
+    std::vector<TH2F*> h2_XY_cls_event; //X_Y position clusters per event
+
+    std::vector<TH2F*> hLRT_event; //T(LR -Trig) per event
+    std::vector<TH2F*> hHRT_event; //T(LR -Trig) per event
+    
 	for (int i=0;i<48;i++){ 
 		TH1F *h1 = new TH1F(Form("hLRT_V_%d",i),"T (LR - Trig)",10000,-9000,1000); 
 		hLRT_V.push_back(h1); 
-                TH1F *h2 = new TH1F(Form("hHRT_V_%d",i),"T (HR - Trig)",10000,-9000,1000);
-                hHRT_V.push_back(h2);
-                TH1F *h3 = new TH1F(Form("hLRT_zoom_V_%d",i),"T (LR - Trig)",600,-2000,1000);
-                hLRT_zoom_V.push_back(h3);
-                TH1F *h4 = new TH1F(Form("hHRT_zoom_V_%d",i),"T (HR - Trig)",600,-2000,1000);
-                hHRT_zoom_V.push_back(h4);
-                TH1F *h5 = new TH1F(Form("deltaT_V_%d",i),"T (HR - LR)", 300, -30, 30);
-                hdeltaT_1D_V.push_back(h5);
-                TH1F *h6 = new TH1F(Form("hLRT_retrig_V_%d",i),"Tn = LRn - Trig; Tn-T1, n>1",150,0,150);
-                hLRT_retrig_V.push_back(h6);
-                TH1F *h7 = new TH1F(Form("hHRT_retrig_V_%d",i),"Tn = HRn - Trig; Tn-T1, n>1",150,0,150);
-                hHRT_retrig_V.push_back(h7);
+        TH1F *h2 = new TH1F(Form("hHRT_V_%d",i),"T (HR - Trig)",10000,-9000,1000);
+        hHRT_V.push_back(h2);
+        TH1F *h3 = new TH1F(Form("hLRT_zoom_V_%d",i),"T (LR - Trig)",600,-2000,1000);
+        hLRT_zoom_V.push_back(h3);
+        TH1F *h4 = new TH1F(Form("hHRT_zoom_V_%d",i),"T (HR - Trig)",600,-2000,1000);
+        hHRT_zoom_V.push_back(h4);
+        TH1F *h5 = new TH1F(Form("deltaT_V_%d",i),"T (HR - LR)", 300, -30, 30);
+        hdeltaT_1D_V.push_back(h5);
+        TH1F *h6 = new TH1F(Form("hLRT_retrig_V_%d",i),"Tn = LRn - Trig; Tn-T1, n>1",150,0,150);
+        hLRT_retrig_V.push_back(h6);
+        TH1F *h7 = new TH1F(Form("hHRT_retrig_V_%d",i),"Tn = HRn - Trig; Tn-T1, n>1",150,0,150);
+        hHRT_retrig_V.push_back(h7);
 	}
-
 
 	// Get time calibration for a given ScanId
 	vector<vector<double>> time_corr_fine_vec;
@@ -124,18 +145,18 @@ void ana_FEBv2::Loop()
 	// Get the Muon Window
 	auto newtree = fChain->CloneTree();
 	vector<double> mu_wind_vec = MuonWindow(sn_, newtree, time_min, time_max, nentries, isFEBv2r2);
-	double muon_window_size = 50.;
+	double muon_window_size = 40.;
 	if(no_trig_case==true) muon_window_size = 1000.;
 	double muW1_HR = mu_wind_vec.at(1)-muon_window_size/2;
 	double muW2_HR = mu_wind_vec.at(1)+muon_window_size/2;
 	double muW1_LR = mu_wind_vec.at(0)-muon_window_size/2;
 	double muW2_LR = mu_wind_vec.at(0)+muon_window_size/2;
-	double muW1_bkg = muW1_HR-5000.;//muW1_HR-1000.
+	double muW1_bkg = muW1_HR-1000.;//muW1_HR-1000.
 	double muW2_bkg = muW2_HR-1000.;//muW2_HR-1000.
 	TH2F* hHRT = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
 	TH2F* hLRT = new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_LR-muW2_LR), muW1_LR, muW2_LR);
 
-        for (int strip_numb=0;strip_numb<48;strip_numb++){
+    for (int strip_numb=0;strip_numb<48;strip_numb++){
 		hHRT_zoom_V.at(strip_numb)->GetXaxis()->SetRangeUser(mu_wind_vec.at(1)-150,mu_wind_vec.at(1)+150);
 		hLRT_zoom_V.at(strip_numb)->GetXaxis()->SetRangeUser(mu_wind_vec.at(0)-150,mu_wind_vec.at(0)+150);
 	}
@@ -168,14 +189,25 @@ void ana_FEBv2::Loop()
         double dT_align_n[48] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-	for (int jj=0;jj<2;jj++){ // jj=0->on muon window; jj=1->out muon window
-		double sum_cluster_size = 0;
-		if(jj==1){
-			muW1_HR = muW1_bkg;
+	for (int jj=0;jj<3;jj++){ // jj=0->on muon window; jj=1->outside muon window; jj=2->multiple cluster events
+        double sum_cluster_size = 0;
+		if(jj == 1){ // This is probably where my code goes in the wrong (One of two errors)
+			muW1_HR_temp = muW1_HR;
+            muW2_HR_temp = muW2_HR;
+            muW1_LR_temp = muW1_LR;
+            muW2_LR_temp = muW2_LR;
+
+            muW1_HR = muW1_bkg;
 			muW2_HR = muW2_bkg;
 			muW1_LR = muW1_bkg;
 			muW2_LR = muW2_bkg;
 		}
+        if (jj == 2){
+            muW1_HR = muW1_HR_temp;
+            muW2_HR = muW2_HR_temp;
+            muW1_LR = muW1_LR_temp;
+            muW2_LR = muW2_LR_temp;
+        }
 
 		// to evaluate the effs
 		ntrig_allevent=0; //denominator
@@ -185,7 +217,11 @@ void ana_FEBv2::Loop()
 		nANDstripLR_noCut_fired=0; //LR eff
 		N_cluster_good=0; // for cluster rate
 
-		//for cluster study
+        multiple_cluster_count = 0;
+        multiple_cluster_count2 = 0;
+
+
+        //for cluster study
 		vector<double> ClusterN;
 		vector<double> ClusterS;
 		vector<double> ClusterL;
@@ -195,7 +231,7 @@ void ana_FEBv2::Loop()
 		int ClusterE = 0;
 
 		//start loop over all events
-                int retrig_rate = 0; //for retrig study
+        int retrig_rate = 0; //for retrig study
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
 			Long64_t ientry = LoadTree(jentry);
 			if (ientry < 0) break;
@@ -222,10 +258,8 @@ void ana_FEBv2::Loop()
 			int HR_ns=0;
 			int signals_notrig=0;
 
-
-        		double first_trig_HR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
-                        double first_trig_LR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
-
+            double first_trig_HR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
+            double first_trig_LR[48] = {10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.};
 
 			for (uint32_t i=0;i<nframe;i++){
 				if (m_channel(frame[i])==32) {
@@ -298,6 +332,7 @@ void ana_FEBv2::Loop()
 					}
 				}
 			}
+
 			hLR_ns->Fill(LR_ns);
 			hHR_ns->Fill(HR_ns);
 			//Check Tigger
@@ -344,15 +379,18 @@ void ana_FEBv2::Loop()
 						if(jj==0) hLRT_->Fill(LR_trig); // Fill the signal - trig plot // checar se esta duplicado
 						if(jj==0) hLRT_temp->Fill(LR_trig); // same but zoom
 						if(jj==0) hLRT_V.at(strip_numb)->Fill(LR_trig);
-                                                if(jj==0) hLRT_zoom_V.at(strip_numb)->Fill(LR_trig);
+                        if(jj==0) hLRT_zoom_V.at(strip_numb)->Fill(LR_trig);
 						if(isFEBv2r2 && strip_numb==23)hLRT_strip23->Fill(LR_trig);
-                                                if(jj==0 && retrig_study){
-                                                        if(first_trig_LR[strip_numb]==10000.) {first_trig_LR[strip_numb] = LR_trig;} else {
-                                                                hLRT_retrig_V.at(strip_numb)->Fill(LR_trig-first_trig_LR[strip_numb]);
+                        if((jj==0) && retrig_study){
+                            if(first_trig_LR[strip_numb]==10000.) {
+                                first_trig_LR[strip_numb] = LR_trig;
+                            }
+                            else {
+                                hLRT_retrig_V.at(strip_numb)->Fill(LR_trig-first_trig_LR[strip_numb]);
 								retrig_rate_temp++;
-                                                        }
+                            }
 
-                                                }
+                        }
 						// add signal to the strip struct
 						if(isFEBv2r2) {
 							allStrips[strip_numb].addLRframe(i,m_time(m_traw(frame[i]))-time_corr_fine[m_fpga(frame[i])][m_channel(frame[i])]);
@@ -378,15 +416,14 @@ void ana_FEBv2::Loop()
 						double HR_trig = time_in_strip_new + time_to_conector_new;
 						if(jj==0) hHRT_->Fill(HR_trig); // Fill the signal - trig plot
 						if(jj==0) hHRT_temp->Fill(HR_trig); // same but zoom // checar
-                                                if(jj==0) hHRT_V.at(strip_numb)->Fill(HR_trig);
-                                                if(jj==0) hHRT_zoom_V.at(strip_numb)->Fill(HR_trig);
+                        if(jj==0) hHRT_V.at(strip_numb)->Fill(HR_trig);
+                        if(jj==0) hHRT_zoom_V.at(strip_numb)->Fill(HR_trig);
 						if(isFEBv2r2 && strip_numb==23)hHRT_strip23->Fill(HR_trig);
-						if(jj==0 && retrig_study){
+						if((jj==0) && retrig_study){
 							if(first_trig_HR[strip_numb]==10000.) {first_trig_HR[strip_numb] = HR_trig;} else {
 								hHRT_retrig_V.at(strip_numb)->Fill(HR_trig-first_trig_HR[strip_numb]);
 								retrig_rate_temp++;
 							}
-				
 						} 
 						// add signal to the strip struct
 						if(isFEBv2r2) {
@@ -402,6 +439,43 @@ void ana_FEBv2::Loop()
 			int ntriggerHR_signal_strip = 0;
 			int ntriggerLR_signal_strip = 0;
 
+            // for histograms per event
+            if (plot_per_event and jj==2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                // DeltaT per event 1D
+                TH1F *h8 = new TH1F(Form("deltaT event %d 1D", ntrig_allevent), "T (HR - LR)", 300, -30, 30);
+                deltaT_event.push_back(h8);
+
+                //DeltaT per event 2D
+                TH2F *h9 = new TH2F(Form("deltaT event %d 2D", ntrig_allevent), "T (HR - LR)", 50,0,50,300, -10, 10);
+                deltaT_event_2D.push_back(h9);
+
+                //ClusterDeltaT vs cluster strip
+                TH2F *h10 = new TH2F("hdeltaClusterT", "ClusterT (HR - LR)", 50,0,50,300, -30, 30);
+                hdeltaClusterT_event.push_back(h10);
+
+                //hClusterSize per event 1D
+                TH1F *h11 = new TH1F("hClusterSize", "Cluster Size" ,10,0,10);
+                hClusterSize_event.push_back(h11);
+
+                //Number of clusters per event
+                TH1F *h12 = new TH1F("hNClusters", "Number of Clusters" ,10,0,10);
+                hNClusters_event.push_back(h12);
+
+                //X_Y position per event
+                TH2F* h13 = new TH2F("X-Y position", " X - Y ",2000,-100,760,6000,-200,1520);
+                h2_XY_event.push_back(h13);
+
+                //X_Y position clusters per event
+                TH2F* h14 = new TH2F("X-Y position Cluster"," X - Y ",2000,-100,760,6000,-200,1520);
+                h2_XY_cls_event.push_back(h14);
+
+                // Heat map of T(HR-Trig) and T(LR-Trig) per event
+                TH2F* h15 = new TH2F("hHRT", "T (HR - Trig)", 50,0,50,abs(muW1_HR-muW2_HR), muW1_HR, muW2_HR);
+                hLRT_event.push_back(h15);
+                TH2F* h16= new TH2F("hLRT", "T (LR - Trig)", 50,0,50,abs(muW1_LR-muW2_LR), muW1_LR, muW2_LR);
+                hHRT_event.push_back(h16);
+            }
+
 			//for clustering
 			vector<int> strip_HR;
 			vector<int> strip_LR;
@@ -412,14 +486,20 @@ void ana_FEBv2::Loop()
 			time_HR.clear();
 			time_LR.clear();
 			//loop over strips
-			for (uint32_t i=0;i<48;i++) {
-				int ntriggerHR_signal_per_strip = 0;
+			for (uint32_t i=0;i<48;i++) { // there are 48 strips,
+                int ntriggerHR_signal_per_strip = 0;
 				for (uint32_t fhr=0; fhr<allStrips[i].HRframe.size(); fhr++){ // frame HR loop
 					double time_in_strip = allStrips[i].HRtime[fhr] - trig_time/*trig[m_fpga(frame[allStrips[i].HRframe[fhr]])]*/ - HR_to_conctor[i]/V_conector;
-					double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[i];
+					double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[i]; //scaled time_in_strip wrt. length of reference strip
 					double time_to_conector_new = HR_to_conctor[i]/V_conector-HR_to_conctor[reference_strip]/V_conector;
 					double HR_trig = time_in_strip_new + time_to_conector_new;
 					hHRT->Fill(i,HR_trig);
+
+                    //hHRT per event
+                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                        hHRT_event.at(multiple_cluster_count2)->Fill(i,HR_trig);
+                    }
+
 					if ( !((HR_trig) > muW1_HR and (HR_trig) < muW2_HR ))
 					{
 						allStrips[i].HRframeOK[fhr] = false;
@@ -443,6 +523,12 @@ void ana_FEBv2::Loop()
 					double time_to_conector_new = LR_to_conctor[i]/V_conector-LR_to_conctor[reference_strip]/V_conector;
 					double LR_trig = time_in_strip_new + time_to_conector_new;
 					hLRT->Fill(i,LR_trig);
+
+                    //hlRT per event
+                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                        hLRT_event.at(multiple_cluster_count2)->Fill(i,LR_trig);
+                    }
+
 					if ( !((LR_trig) > muW1_LR and (LR_trig) < muW2_LR ))
 					{
 						allStrips[i].LRframeOK[flr] = false;
@@ -455,30 +541,33 @@ void ana_FEBv2::Loop()
 						ntriggerLR_signal++;
 						ntriggerLR_signal_per_strip++;
 					}
-
 				}
+
 				if(ntriggerLR_signal_per_strip>0) ntriggerLR_signal_strip++;
 				nFiredLR_per_strip->Fill(i,ntriggerLR_signal_per_strip);
 
 				allStrips[i].buildDeltas();
 				if (allStrips[i].deltas.size() > 0) has_paired_strips = 1; //In the event there is at least 1 paired strip
-				for (uint32_t d=0; d<allStrips[i].deltas.size(); d++){ //loop over deltas
+
+                for (uint32_t d=0; d<allStrips[i].deltas.size(); d++){ //loop over deltas
 					n_paired_srip++;
 					hLHRn->Fill(i,1/(((muW2_HR-muW1_HR))*1e-9*0.9*Strip_length[i]*0.1)); 
 					double time_corr_HR = time_corr_fine[m_fpga(frame[allStrips[i].deltas[d].second])][m_channel(frame[allStrips[i].deltas[d].second])];
 					double time_corr_LR = time_corr_fine[m_fpga(frame[allStrips[i].deltas[d].first])][m_channel(frame[allStrips[i].deltas[d].first])];
 					double time_in_strip = m_time(m_traw(frame[allStrips[i].deltas[d].second])) - time_corr_HR  - trig_time - HR_to_conctor[i]/V_conector;
-					double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[i];
+
+					double time_in_strip_new = time_in_strip*Strip_length[reference_strip]/Strip_length[i]; // time in strip rescaled wrt. reference strip
 					double time_to_conector_new = HR_to_conctor[i]/V_conector-HR_to_conctor[reference_strip]/V_conector;
 					double HR_trig = time_in_strip_new + time_to_conector_new;
+
 					double time_in_strip2 = m_time(m_traw(frame[allStrips[i].deltas[d].first])) - time_corr_LR - trig_time - LR_to_conctor[i]/V_conector;
-					double time_in_strip2_new = time_in_strip2*Strip_length[reference_strip]/Strip_length[i];
+					double time_in_strip2_new = time_in_strip2*Strip_length[reference_strip]/Strip_length[i]; // time in strip (2) rescaled wrt. reference strip
 					double time_to_conector_new2 = LR_to_conctor[i]/V_conector-LR_to_conctor[reference_strip]/V_conector;
 					double LR_trig = time_in_strip2_new + time_to_conector_new2;
 
-					strip_HR.push_back((int)i);
+					strip_HR.push_back((int) i);
 					time_HR.push_back(time_in_strip); //time_in_strip_new
-					strip_LR.push_back((int)i);
+					strip_LR.push_back((int) i);
 					time_LR.push_back(time_in_strip2); //time_in_strip2_new
 
 					deltaT=time_in_strip2_new-time_in_strip_new+Strip_length[reference_strip]/(V_conector);
@@ -486,27 +575,41 @@ void ana_FEBv2::Loop()
 					if(deltaT>0) n_paired_srip_med++;
 
 					vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2-dT_align_factor[i]));//0.3 7.
-                                        vector<double> X_Y_forAlign = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2));
+                    vector<double> X_Y_forAlign = convert_DeltaTAndStrip_To_XY(sn_,i,(time_in_strip-time_in_strip2));
 					//std::cout << "test" << std::endl;
 					if(align_XY && X_Y_forAlign.at(1)>-200 && X_Y_forAlign.at(1)<1500 && jj==1){
 						Y_align[i] = Y_align[i]+X_Y_forAlign.at(1);
-                                                Y_align_n[i] = Y_align_n[i]+1;
+                        Y_align_n[i] = Y_align_n[i]+1;
 						dT_align[i] = dT_align[i]+(time_in_strip-time_in_strip2);
 						dT_align_n[i] = dT_align_n[i]+1;
 					}
 
-                                        //vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(m_time(m_traw(frame[allStrips[i].deltas[d].second]))-m_time(m_traw(frame[allStrips[i].deltas[d].first]))-time_corr_HR+time_corr_LR+10.));//0.3 7.
+                    //vector<double> X_Y = convert_DeltaTAndStrip_To_XY(sn_,i,(m_time(m_traw(frame[allStrips[i].deltas[d].second]))-m_time(m_traw(frame[allStrips[i].deltas[d].first]))-time_corr_HR+time_corr_LR+10.));//0.3 7.
 
 					h2_XY->Fill(X_Y.at(0),(X_Y.at(1)/*+Y_align_factor[i]*/));
 					//std::cout << "X: " << X_Y.at(0) << "; Y: " << X_Y.at(1) << std::endl;
 
+                    //h2_XY per event
+                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                        h2_XY_event.at(multiple_cluster_count2)->Fill(X_Y.at(0),(X_Y.at(1)));
+                    }
+
 					sumT=time_in_strip2_new+time_in_strip_new;//LR_trig+HR_trig;
-					//                                        hdeltaT->Fill(i,(m_time(m_traw(frame[allStrips[i].deltas[d].first]))-time_corr_LR+LR_to_conctor[i]/V_conector-(m_time(m_traw(frame[allStrips[i].deltas[d].second]))-time_corr_HR+HR_to_conctor[i]/V_conector)));
-					hdeltaT->Fill(i,deltaT);
+					// hdeltaT->Fill(i,(m_time(m_traw(frame[allStrips[i].deltas[d].first]))-time_corr_LR+LR_to_conctor[i]/V_conector-(m_time(m_traw(frame[allStrips[i].deltas[d].second]))-time_corr_HR+HR_to_conctor[i]/V_conector)));
+
+                    hdeltaT->Fill(i,deltaT);
 					hsumT->Fill(i,sumT);
 					hdeltaT_1D->Fill(deltaT);
-					if(jj==0) hdeltaT_1D_V.at(i)->Fill(time_in_strip-time_in_strip2/*deltaT*/);
+					if(jj==0) {
+                        hdeltaT_1D_V.at(i)->Fill(time_in_strip-time_in_strip2/*deltaT*/);
+                    }
 					hsumT_1D->Fill(sumT);
+
+                    //deltaT plots per event
+                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                        deltaT_event.at(multiple_cluster_count2)->Fill(deltaT);
+                        deltaT_event_2D.at(multiple_cluster_count2)->Fill(i,deltaT);
+                    }
 				}
 			} // strip loop ends
 
@@ -569,18 +672,50 @@ void ana_FEBv2::Loop()
 				}
 			}
 			hNClusters->Fill(CLUSTER.size());
+
+            //Number of clusters per event
+            if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                hNClusters_event.at(multiple_cluster_count2)->Fill(CLUSTER.size());
+            }
+
 			sum_cluster_size = sum_cluster_size + CLUSTER.size();
 			for(int ij=0;ij<CLUSTER.size();ij++){
 				hsumTCluster_1D->Fill(CLUSTER.at(ij).sum_time());
 				/*if(CLUSTER.at(ij).time()>0.)*/ cluster_good=true;
-				if(CLUSTER.at(ij).size()>0.) hClusterSize->Fill(CLUSTER.at(ij).size());
+				if(CLUSTER.at(ij).size()>0.) {
+                    hClusterSize->Fill(CLUSTER.at(ij).size());
+
+                    //hClusterSize per event
+                    if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                        hClusterSize_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).size());
+                    }
+                }
 				hdeltaTCluster_1D->Fill(CLUSTER.at(ij).time());
 				hdeltaClusterT->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
+
+                //hdeltaTCluster per event
+                if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                    hdeltaClusterT_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).strip(),(CLUSTER.at(ij).time()));
+                }
 //                                int strip_cls_int = (int)CLUSTER.at(ij).strip();
 //                                if((CLUSTER.at(ij).strip()-strip_cls_int)>0.5) strip_cls_int = strip_cls_int+1;
 //				vector<double> X_Y_cls = convert_DeltaTAndStrip_To_XY(sn_,CLUSTER.at(ij).strip(),CLUSTER.at(ij).time_XY()/*+dT_align_factor[strip_cls_int]*/);
 //				if(CLUSTER.at(ij).size()>=2) h2_XY_cls->Fill(X_Y_cls.at(0),X_Y_cls.at(1)/*+Y_align_factor[strip_cls_int]*/);
-                                if(CLUSTER.at(ij).size()>=2) h2_XY_cls->Fill(CLUSTER.at(ij).X(),CLUSTER.at(ij).Y());
+                //if(CLUSTER.at(ij).size()>=2) {
+                h2_XY_cls->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
+
+
+                //X_Y positions per event
+                if (plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent){
+                    h2_XY_cls_event.at(multiple_cluster_count2)->Fill(CLUSTER.at(ij).X(), CLUSTER.at(ij).Y());
+                }
+
+                if (CLUSTER.at(ij).size()>=nr_of_clust  and CLUSTER.size()>=clust_multiplicity and multiple_cluster_count<nr_of_event_plots and not std::count(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent)) { //only add the events inside the muon window
+                    //multiple_cluster_count++;
+                    if(jj==0) multiple_cluster_events.push_back(ntrig_allevent);
+                    multiple_cluster_count++;
+                }
+
 			}
 
 			if(cluster_good) N_cluster_good++;
@@ -588,6 +723,9 @@ void ana_FEBv2::Loop()
 			if(ntriggerLR_signal>0) nANDstripLR_noCut_fired++;
 			if(ntriggerHR_signal>0) nANDstripHR_noCut_fired++;
 
+            if(plot_per_event and jj == 2 and *find(multiple_cluster_events.begin(), multiple_cluster_events.end(), ntrig_allevent) == ntrig_allevent) {
+                multiple_cluster_count2++;
+            }
 			ntrig_allevent++; // count denom of eff
 			if (has_paired_strips) {
 				nANDstrip_fired++;
@@ -596,10 +734,11 @@ void ana_FEBv2::Loop()
 			}
 			hnPairs->Fill(n_paired_srip);
 		} //Event loop ends
-                std::cout << "===================================================================================" << std::endl;
-		if(jj==0 && retrig_study) std::cout << "RETRIG RATE: " << (double)retrig_rate/(double)ntrig_allevent << std::endl;
-                if(jj==0 && retrig_study) std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
-                std::cout << "===================================================================================" << std::endl;
+
+        std::cout << "===================================================================================" << std::endl;
+		if((jj==0) && retrig_study) std::cout << "RETRIG RATE: " << (double)retrig_rate/(double)ntrig_allevent << std::endl;
+        if((jj==0)&& retrig_study) std::cout << "ntrig_allevent: " << ntrig_allevent << std::endl;
+        std::cout << "===================================================================================" << std::endl;
 
 		hHRT_temp->GetXaxis()->SetRangeUser(hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())-50,hHRT_temp->GetXaxis()->GetBinCenter(hHRT_temp->GetMaximumBin())+50);
 		hLRT_temp->GetXaxis()->SetRangeUser(hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())-50,hLRT_temp->GetXaxis()->GetBinCenter(hLRT_temp->GetMaximumBin())+50);
@@ -611,7 +750,7 @@ void ana_FEBv2::Loop()
 		hsumT_1D->GetXaxis()->SetRangeUser(hsumT_1D->GetXaxis()->GetBinCenter(hsumT_1D->GetMaximumBin())-50,hsumT_1D->GetXaxis()->GetBinCenter(hsumT_1D->GetMaximumBin())+50);
 		hsumTCluster_1D->GetXaxis()->SetRangeUser(hsumTCluster_1D->GetXaxis()->GetBinCenter(hsumTCluster_1D->GetMaximumBin())-50,hsumTCluster_1D->GetXaxis()->GetBinCenter(hsumTCluster_1D->GetMaximumBin())+50);
 
-		if(jj==0 && ClusterE!=0){
+		if((jj==0) && ClusterE!=0){
 			for(int ij=0;ij<100;ij++){
 				ClusterS.at(ij) = ClusterS.at(ij)/ClusterE;
 				ClusterN.at(ij) = ClusterN.at(ij)/ClusterE;
@@ -644,15 +783,17 @@ void ana_FEBv2::Loop()
 		myfile << (nANDstripLR_noCut_fired)/float(ntrig_allevent) <<"\n";
 		myfile << (N_cluster_good)/float(ntrig_allevent) <<"\n";
 		myfile << sum_cluster_size/(ntrig_allevent*muon_window_size*pow(10,-9)*6000) <<"\n";
-		if(jj==0) ntrig_allevent_muon_window = ntrig_allevent;
+		if(jj==0 || jj==2) ntrig_allevent_muon_window = ntrig_allevent;
 		if(jj==1) ntrig_allevent_gamma_window = ntrig_allevent;
 
 		myfile<<""<<"\n";
 
 		TString sss("");
-		if(jj==0) sss.Form("muons_");
+		if(jj==0 || jj==2) sss.Form("muons_");
 		if(jj==1) sss.Form("gammas_");
-		if(jj==0 || (jj==1&&print_gamma_histos)){
+        //if(jj==2) sss.Form("muons_multi_");
+
+        if(jj==0 || (jj==1&&print_gamma_histos)){
 			// Draw histos and save
 
 			hLHRn_dif = (TH1F*)hHRn->Clone("hLHRn_dif");
@@ -711,11 +852,11 @@ void ana_FEBv2::Loop()
 			h2_XY->SetMarkerSize(4);
 			plot_and_save_2D(h2_XY, sss, "X_Y", hv_, sn_, "P");
 
-                        h2_XY_cls->SetTitle("");
-                        h2_XY_cls->GetYaxis()->SetTitle("y [mm]");
-                        h2_XY_cls->GetXaxis()->SetTitle("x [mm]");
-                        h2_XY_cls->SetMarkerSize(4);
-                        plot_and_save_2D(h2_XY_cls, sss, "X_Y_cls", hv_, sn_, "P");
+            h2_XY_cls->SetTitle("");
+            h2_XY_cls->GetYaxis()->SetTitle("y [mm]");
+            h2_XY_cls->GetXaxis()->SetTitle("x [mm]");
+            h2_XY_cls->SetMarkerSize(4);
+            plot_and_save_2D(h2_XY_cls, sss, "X_Y_cls", hv_, sn_, "P");
 
 			hdeltaClusterT->SetTitle("");
 			hdeltaClusterT->GetYaxis()->SetTitle("Cluster delta time [ns]");
@@ -735,7 +876,6 @@ void ana_FEBv2::Loop()
 			hnPairs->GetXaxis()->SetTitle("n paired strips");
 			hnPairs->SetTitle("");
 			plot_and_save_1D(hnPairs,sss, "n_paired_srip", hv_, sn_,1111);
-
 
 			hClusterSize->SetTitle("");
 			hClusterSize->GetYaxis()->SetTitle("Events");
@@ -772,22 +912,23 @@ void ana_FEBv2::Loop()
 
 			plot_and_save_2x_1D(hLRT_strip23, hHRT_strip23, sss, "DeltaTrig_side_forTimeWindow_strip23", hv_,sn_, 0);
 
-			if(jj==0){
+            if(jj==0){
 				for (int i=0;i<48;i++){
 					plot_and_save_2x_1D(hLRT_V.at(i), hHRT_V.at(i), sss, Form("DeltaTrig_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
-                	                plot_and_save_2x_1D(hLRT_zoom_V.at(i), hHRT_zoom_V.at(i), sss, Form("DeltaTrig_zoom_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
-                        		hdeltaT_1D_V.at(i)->GetXaxis()->SetTitle(Form("delta time [ns] strip%d",i));
-                	        	hdeltaT_1D_V.at(i)->GetYaxis()->SetTitle("Events");
-        	       			hdeltaT_1D_V.at(i)->SetTitle("");
-	                        	plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "plts_per_strip/");
-                        		//for retrig study
+                    plot_and_save_2x_1D(hLRT_zoom_V.at(i), hHRT_zoom_V.at(i), sss, Form("DeltaTrig_zoom_side_1d_strip%d",i), hv_,sn_, 0, false, "plts_per_strip/");
+                    hdeltaT_1D_V.at(i)->GetXaxis()->SetTitle(Form("delta time [ns] strip%d",i));
+                    hdeltaT_1D_V.at(i)->GetYaxis()->SetTitle("Events");
+                    hdeltaT_1D_V.at(i)->SetTitle("");
+                    plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "plts_per_strip/");
+
+                    //for retrig study
 					if(retrig_study) plot_and_save_2x_1D(hLRT_retrig_V.at(i), hHRT_retrig_V.at(i), sss, Form("DeltaTrig_retrig_1d_strip%d",i), hv_,sn_, 0, false, "retriggering_study/");
-//                                        plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "retriggering_study/");
+//                       plot_and_save_1D(hdeltaT_1D_V.at(i), sss, Form("deltaT_1D_srip%d",i), hv_, sn_, 0, "retriggering_study/");
 					if(i!=0 && retrig_study) hLRT_retrig_V.at(0)->Add(hLRT_retrig_V.at(i));
-                                        if(i!=0 && retrig_study) hHRT_retrig_V.at(0)->Add(hHRT_retrig_V.at(i));
+                    if(i!=0 && retrig_study) hHRT_retrig_V.at(0)->Add(hHRT_retrig_V.at(i));
 				}
 				if(retrig_study) plot_and_save_1D(hLRT_retrig_V.at(0), sss, Form("deltaT_1D_LR"), hv_, sn_, 0, "retriggering_study/");
-                                if(retrig_study) plot_and_save_1D(hHRT_retrig_V.at(0), sss, Form("deltaT_1D_HR"), hv_, sn_, 0, "retriggering_study/");
+                if(retrig_study) plot_and_save_1D(hHRT_retrig_V.at(0), sss, Form("deltaT_1D_HR"), hv_, sn_, 0, "retriggering_study/");
 				if(retrig_study) hLRT_retrig_V.at(0)->Add(hHRT_retrig_V.at(0));
 				if(retrig_study) plot_and_save_1D(hLRT_retrig_V.at(0), sss, Form("deltaT_1D_ALL"), hv_, sn_, 0, "retriggering_study/");
 			}
@@ -799,9 +940,69 @@ void ana_FEBv2::Loop()
 			if(jj==0) hHRn_gamma_LR = hLRn->Integral()/48.;
 			if(jj==0) gamma_cluster_size = hClusterSize->GetMean(); 
 
-			hLR->Reset(); hHR->Reset(); hLRn->Reset(); hHRn->Reset(); nFiredHR_per_strip->Reset(); nFiredLR_per_strip->Reset(); hdeltaT->Reset(); hsumT->Reset(); hdeltaT_1D->Reset(); hsumT_1D->Reset(); hLRT_->Reset(); hHRT_->Reset(); hLRT_temp->Reset(); hHRT_temp->Reset(); hLRT_2->Reset(); hHRT_2->Reset(); hnPairs->Reset(); hdeltaTCluster_1D->Reset(); hsumTCluster_1D->Reset(); hClusterSize->Reset(); hNClusters->Reset(); hdeltaClusterT->Reset(); hLRT_strip23->Reset(); hHRT_strip23->Reset(); hLHRn_dif->Reset(); hLHR_dif->Reset(); hLR_ns->Reset(); hHR_ns->Reset(); h2_XY->Reset(); h2_XY_cls->Reset(); hLHRn->Reset(); 
+			hLR->Reset(); hHR->Reset(); hLRn->Reset(); hHRn->Reset(); nFiredHR_per_strip->Reset(); nFiredLR_per_strip->Reset(); hdeltaT->Reset(); hsumT->Reset(); hdeltaT_1D->Reset(); hsumT_1D->Reset(); hLRT_->Reset(); hHRT_->Reset(); hLRT_temp->Reset(); hHRT_temp->Reset(); hLRT_2->Reset(); hHRT_2->Reset(); hnPairs->Reset(); hdeltaTCluster_1D->Reset(); hsumTCluster_1D->Reset(); hClusterSize->Reset(); hNClusters->Reset(); hdeltaClusterT->Reset(); hLRT_strip23->Reset(); hHRT_strip23->Reset(); hLHRn_dif->Reset(); hLHR_dif->Reset(); hLR_ns->Reset(); hHR_ns->Reset(); h2_XY->Reset(); h2_XY_cls->Reset(); hLHRn->Reset();
 		}
 
+        //display and save histograms per event for all events with multiple clusters
+        if(jj == 2) {
+            for(int event=0; event < nr_of_event_plots; event++) {
+                // DeltaT per event 1D
+                deltaT_event.at(event)->GetXaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
+                deltaT_event.at(event)->GetYaxis()->SetTitle("Events");
+                deltaT_event.at(event)->SetTitle("");
+                deltaT_event.at(event)->SetStats(true);
+                plot_and_save_1D(deltaT_event.at(event), sss, Form("deltaT_event%d_1D", multiple_cluster_events.at(event)), hv_, sn_, 1, "plts_per_event/");
+
+                //DeltaT per event 2D
+                deltaT_event_2D.at(event)->GetYaxis()->SetTitle(Form("deltaT event %d", multiple_cluster_events.at(event)));
+                deltaT_event_2D.at(event)->GetXaxis()->SetTitle("strip");
+                deltaT_event_2D.at(event)->SetTitle("");
+                deltaT_event_2D.at(event)->SetMarkerStyle(20);
+                deltaT_event_2D.at(event)->SetMarkerSize(0.4);
+                plot_and_save_2D(deltaT_event_2D.at(event), sss, Form("deltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event/");
+
+                //ClusterDeltaT vs cluster strip
+                hdeltaClusterT_event.at(event)->GetYaxis()->SetTitle(Form("Cluster delta time [ns] event %d", multiple_cluster_events.at(event)));
+                hdeltaClusterT_event.at(event)->GetXaxis()->SetTitle("Cluster Strips");
+                hdeltaClusterT_event.at(event)->SetTitle("");
+                hdeltaClusterT_event.at(event)->SetMarkerStyle(20);
+                hdeltaClusterT_event.at(event)->SetMarkerSize(0.4);
+                plot_and_save_2D(hdeltaClusterT_event.at(event), sss, Form("ClusterDeltaT_event%d_2D", multiple_cluster_events.at(event)), hv_, sn_, "P", "plts_per_event/");
+
+                //hClusterSize per event
+                hClusterSize_event.at(event)->SetTitle("");
+                hClusterSize_event.at(event)->GetYaxis()->SetTitle("Events");
+                hClusterSize_event.at(event)->GetXaxis()->SetTitle(Form("Cluster size event %d", multiple_cluster_events.at(event)));
+                hClusterSize_event.at(event)->SetStats(true);
+                plot_and_save_1D(hClusterSize_event.at(event),sss, Form("Cluster_size_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event/");
+
+                //Number of clusters per event
+                hNClusters_event.at(event)->GetYaxis()->SetTitle("Events");
+                hNClusters_event.at(event)->GetXaxis()->SetTitle(Form("Number of Clusters event %d", multiple_cluster_events.at(event)));
+                hNClusters_event.at(event)->SetTitle("");
+                hNClusters_event.at(event)->SetStats(true);
+                plot_and_save_1D(hNClusters_event.at(event),sss, Form("N_Clusters_event%d", multiple_cluster_events.at(event)), hv_, sn_,1111, "plts_per_event/");
+
+                //X_Y position + X_Y position clusters per event
+                h2_XY_event.at(event)->SetTitle("");
+                h2_XY_event.at(event)->GetYaxis()->SetTitle("y [mm]");
+                h2_XY_event.at(event)->GetXaxis()->SetTitle(Form("x [mm] event %d", multiple_cluster_events.at(event)));
+                h2_XY_event.at(event)->SetMarkerStyle(kFullCircle);
+                h2_XY_event.at(event)->SetMarkerSize(0.4);
+                h2_XY_cls_event.at(event)->SetTitle("");
+                h2_XY_cls_event.at(event)->SetMarkerStyle(kOpenCircle);
+                h2_XY_cls_event.at(event)->SetMarkerColor(kRed);
+                h2_XY_cls_event.at(event)->SetLineColor(kRed);
+                h2_XY_cls_event.at(event)->SetMarkerSize(1);
+                plot_and_save_together_2D(h2_XY_event.at(event), h2_XY_cls_event.at(event), sss, Form("X_Y_together_event%d", multiple_cluster_events.at(event)), hv_, sn_, "plts_per_event/");
+
+                // Heat map of T(HR-Trig) and T(LR-Trig) per event
+                plot_and_save_2x_2D(hHRT_event.at(event), hLRT_event.at(event), sss, Form("DeltaTrig_side_event%d",multiple_cluster_events.at(event)), hv_, sn_, "COLZ", "plts_per_event/");
+
+                // clear histograms
+                deltaT_event.at(event)->Reset(); deltaT_event_2D.at(event)->Reset(); hdeltaClusterT_event.at(event)->Reset(); hClusterSize_event.at(event)->Reset(); hNClusters_event.at(event)->Reset(); h2_XY_event.at(event)->Reset(); h2_XY_cls_event.at(event)->Reset(); hHRT_event.at(event)->Reset(); hLRT_event.at(event)->Reset();
+            }
+        }
 	}
 	myfile<<""<<"\n";
 	myfile<<""<<"\n";
@@ -929,5 +1130,3 @@ void ana_FEBv2::Loop()
 	gApplication->Terminate();
 
 }
-
-
